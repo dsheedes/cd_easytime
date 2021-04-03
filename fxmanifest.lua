@@ -3,7 +3,7 @@ games { 'gta5' }
 
 author 'Codesign#2715'
 description 'Weather & Time'
-version '1.1.6'
+version '1.1.7'
 
 client_scripts {
 	'config.lua',
