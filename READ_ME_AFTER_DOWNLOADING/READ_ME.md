@@ -1,1 +1,0 @@
-https://docs.codesign.pro/free-scripts/easytime-time-and-weather-management
