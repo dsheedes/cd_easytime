@@ -9,7 +9,9 @@ let values = {
     weather:"CLEAR",
     dynamic:false,
     blackout:false,
-    freeze:false
+    freeze:false,
+    instanttime:false,
+    instantweather:false,
 }
 async function generateClouds(){
     let container = $("#easytime-clouds");
@@ -30,10 +32,10 @@ function closeUI(){
     xhr.open("POST", "https://cd_easytime/close", true);                                                                                                                                                                                                                                                                                                                                      
     xhr.send(JSON.stringify({}));
 }
-function easyTimeChange(values){
+function easyTimeChange(values, savesettings){
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "https://cd_easytime/change", true);                                                                                                                                                                                                                                                                                                                                      
-    xhr.send(JSON.stringify(values));
+    xhr.send(JSON.stringify({values, savesettings}));
 }
 function convertTime(time){
     if(time >= 24)
@@ -129,6 +131,7 @@ $(document).on("input", "#easytime-range", function() {
 });
 $("#easytime-24hr").on("click", ()=>{
     settings.using24hr = !settings.using24hr;
+
     if(settings.using24hr)
         $("#easytime-24hr-label").html("24 hr")
     else $("#easytime-24hr-label").html("12 hr")
@@ -139,12 +142,14 @@ window.addEventListener("message", function(event){
     if(event.data.action == "open"){
         $("#easytime-card").slideDown(500);
         values = event.data.values;
-        updateTimeDisplay(((values.time >=1 && values.time <= 7)?values.time+24:values.time));
-        tc = ((values.time >=1 && values.time <= 7)?values.time+24:values.time);
+
         let id = "#easytime-weather-"+values.weather.toLowerCase();
 
         $(id).attr("checked", "checked");
 
+        updateTimeDisplay(((values.time >=1 && values.time <= 7)?values.time+24:values.time));
+        tc = ((values.time >=1 && values.time <= 7)?values.time+24:values.time);
+        
         if(values.dynamic){
             $("#easytime-dynamic").attr("checked", "checked");
         } else $("#easytime-dynamic").removeAttr("checked");
@@ -156,6 +161,13 @@ window.addEventListener("message", function(event){
         if(values.freeze){
             $("#easytime-freeze").attr("checked", "checked");
         } else $("#easytime-freeze").removeAttr("checked");
+
+        if(values.instanttime){
+            $("#easytime-instant-time").attr("checked", "checked");
+        } else $("#easytime-instant-time").removeAttr("checked");
+        if(values.instantweather){
+            $("#easytime-instant-weather").attr("checked", "checked");
+        } else $("#easytime-instant-weather").removeAttr("checked");
 
         $("#easytime-range").val(((values.time >=1 && values.time <= 7)?values.time+24:values.time));
 
@@ -179,6 +191,18 @@ $("#easytime-freeze").click(() => {
 $("#easytime-dynamic").click(() => {
     values.dynamic = !values.dynamic;
 });
+$("#easytime-instant-time").click(() => {
+    values.instanttime = !values.instanttime;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://cd_easytime/instanttime", true);                                                                                                                                                                                                                                                                                                                                      
+    xhr.send(JSON.stringify({instanttime:values.instanttime}));
+})
+$("#easytime-instant-weather").click(() => {
+    values.instantweather = !values.instantweather;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://cd_easytime/instantweather", true);                                                                                                                                                                                                                                                                                                                                      
+    xhr.send(JSON.stringify({instantweather:values.instantweather}));
+})
 $("#easytime-button-close").on("click", function() {
     window.postMessage({action:"close"});
     closeUI();
@@ -191,20 +215,29 @@ $("#easytime-button-change").on("click", function() {
             weather:values.weather,
             blackout:values.blackout,
             freeze:values.freeze,
-            dynamic:values.dynamic
-        });
-    } else easyTimeChange(values);
+            dynamic:values.dynamic,
+            instanttime:values.instanttime,
+            instantweather:values.instantweather,
+        }, false);
+    } else easyTimeChange(values, false);
     
 })
 $("#easytime-button-save").on("click", () => {
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://cd_easytime/savesettings", true);                                                                                                                                                                                                                                                                                                                                      
-    xhr.send(JSON.stringify({ok:true}));
+    let data;
 
-    $("#easytime-button-save").html("...").attr("disabled", true);
-    setTimeout(() => {
-        $("#easytime-button-save").html("Save Settings").attr("disabled", false);
-    }, 1500);
+    window.postMessage({action:"close"});
+
+    if(tc == values.time){
+        easyTimeChange({
+            weather:values.weather,
+            blackout:values.blackout,
+            freeze:values.freeze,
+            dynamic:values.dynamic,
+            instanttime:values.instanttime,
+            instantweather:values.instantweather,
+        }, true);
+    } else easyTimeChange({values}, true);
 });
 $(document).ready(function() {
     $(function () {

@@ -133,24 +133,35 @@
                             </div>
                         </div>
                     <div class="row mt-2">
-                        <div class="col-12 text-right mt-2">
-                            <hr>
-                            <div class="d-inline custom-control custom-switch">
+                        <div class="col-12 mt-2 d-flex flex-wrap justify-content-around align-content-around">
+                            <div class="ml-1 mr-1 custom-control custom-switch" data-toggle="tooltip" data-placement="top" title="Doesn't allow the time to change" data-trigger="hover">
                                 <input type="checkbox" class="custom-control-input" id="easytime-freeze">
                                 <label id="easytime-freeze-label" class="custom-control-label" for="easytime-freeze">Freeze time</label>
                             </div>
-                            <div class="d-inline custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="easytime-24hr">
-                                <label id="easytime-24hr-label" class="custom-control-label" for="easytime-24hr">24 hr</label>
+                            <div class="ml-1 mr-1 custom-control custom-switch" data-toggle="tooltip" data-placement="top" title="UI change only" data-trigger="hover">
+                                <input type="checkbox" class="custom-control-input" id="easytime-24hr" checked>
+                                <label id="easytime-24hr" class="custom-control-label" for="easytime-24hr">24 hr</label>
                             </div>
-                            <div class="d-inline custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="easytime-blackout">
+                            <div class="ml-1 mr-1 custom-control custom-switch" data-toggle="tooltip" data-placement="top" title="Turns off the city lights" data-trigger="hover"> 
+                                <input type="checkbox" class="custom-control-input" id="easytime-blackout" >
                                 <label id="easytime-blackout" class="custom-control-label" for="easytime-blackout">Blackout</label>
                             </div>
-                            <div class="d-inline custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="easytime-dynamic">
+                            <div class="ml-1 mr-1 custom-control custom-switch" data-toggle="tooltip" data-placement="top" title="Allow/disallow weather change" data-trigger="hover">
+                                <input type="checkbox" class="custom-control-input" id="easytime-dynamic" >
                                 <label id="easytime-dynamic" class="custom-control-label" for="easytime-dynamic">Dynamic weather</label>
                             </div>
+                            <div class="ml-1 mr-1 custom-control custom-switch" data-toggle="tooltip" data-placement="top" title="Update the time instantly or have it change slower" data-trigger="hover">
+                                <input type="checkbox" class="custom-control-input" id="easytime-instant-time" >
+                                <label id="easytime-instant-time" class="custom-control-label" for="easytime-instant-time">Instant time change</label>
+                            </div>
+                            <div class="ml-1 mr-1 custom-control custom-switch" data-toggle="tooltip" data-placement="top" title="Update the weather instantly or have it change slower" data-trigger="hover">
+                                <input type="checkbox" class="custom-control-input" id="easytime-instant-weather" >
+                                <label id="easytime-instant-weather" class="custom-control-label" for="easytime-instant-weather">Instant weather change</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-12 text-right mt-1">
                             <div class="btn-group" role="group">
                                 <button id="easytime-button-save" type="button" class="btn btn-sm btn-primary">Save Settings</button>
                                 <button id="easytime-button-change" type="button" class="btn btn-sm btn-success">Change</button>
