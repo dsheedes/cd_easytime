@@ -256,11 +256,9 @@ AddEventHandler('cd_easytime:ToggleInstantChange:Weather', function(boolean)
     InstantWeatherChange = boolean
 end)
 
-Citizen.CreateThread(function()
-    RegisterServerEvent('cd_easytime:SaveSettings')
-    AddEventHandler('cd_easytime:SaveSettings', function()
-        SaveSettngs()
-    end)
+RegisterServerEvent('cd_easytime:SaveSettings')
+AddEventHandler('cd_easytime:SaveSettings', function()
+    SaveSettngs()
 end)
 
 AddEventHandler('onResourceStop', function(resource)
