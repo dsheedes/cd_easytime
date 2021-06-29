@@ -44,7 +44,7 @@ AddEventHandler('cd_easytime:ForceUpdate', function(data, instant, first_sync)
         if data.hours ~= nil then
             local newhours = GetClockHours()
             NetworkOverrideClockTime(newhours, data.mins, Seconds)
-            if not instant.time and not FreezeTime then
+            if not instant.time then
                 for i=1, 24 do
                     newhours = newhours+1
                     if newhours == 24 then newhours = 0 end
@@ -96,8 +96,8 @@ end)
 
 Citizen.CreateThread(function()
     while true do
-        if not FreezeTime then
-            if not PauseSync then
+        if not PauseSync then
+            if not FreezeTime then
                 NetworkOverrideClockTime(Hours, Mins, Seconds)
                 Seconds = Seconds+30
                 if SyncHours ~= nil and SyncMins ~= nil then
@@ -110,10 +110,10 @@ Citizen.CreateThread(function()
                 if Mins >= 60 then Mins = 0 Hours = Hours+1 end
                 if Hours >= 24 then Hours = 0 end
             else
-                NetworkOverrideClockTime(23, 00, 00)
+                NetworkOverrideClockTime(Hours, Mins, Seconds)
             end
         else
-            NetworkOverrideClockTime(Hours, Mins, Seconds)
+            NetworkOverrideClockTime(20, 00, 00)
         end
         Citizen.Wait(Config.TimeCycleSpeed*1000/2)
     end
@@ -164,7 +164,7 @@ function ChangeWeather(weather, blackout, instant)
     else
         SetBlackout(blackout)
         ClearOverrideWeather()
-        SetWeatherTypeOvertimePersist(weather, 180.0) --180.0 takes around 2-3 minutes to fully change the weather.
+        SetWeatherTypeOvertimePersist(weather, 180.0) --180.0 takes around 3 minutes to fully change the weather.
     end
 end
 
@@ -187,18 +187,38 @@ RegisterNetEvent('cd_easytime:ToggleNUIFocus')
 AddEventHandler('cd_easytime:ToggleNUIFocus', function()
     NUI_status = true
     while NUI_status do
-        if Config.NUI_keepinput then
-            SetNuiFocus(NUI_status, NUI_status)
-            SetNuiFocusKeepInput(NUI_status)
-            DisableControlAction(0, 24, true)
-            DisableControlAction(0, 25, true)
-            SetPlayerCanDoDriveBy(PlayerId(), false)
-        else
-            SetNuiFocus(NUI_status, NUI_status)
-        end
-        Citizen.Wait(5)
+        Wait(5)
+        SetNuiFocus(NUI_status, NUI_status)
+        SetNuiFocusKeepInput(NUI_status)
+        DisableControlAction(0, 1,   true)
+        DisableControlAction(0, 2,   true)
+        DisableControlAction(0, 106, true)
+        DisableControlAction(0, 142, true)
+        DisableControlAction(0, 21,  true)
+        DisableControlAction(0, 24,  true)
+        DisableControlAction(0, 25,  true)
+        DisableControlAction(0, 47,  true)
+        DisableControlAction(0, 58,  true)
+        DisableControlAction(0, 263, true)
+        DisableControlAction(0, 264, true)
+        DisableControlAction(0, 257, true)
+        DisableControlAction(0, 140, true)
+        DisableControlAction(0, 141, true)
+        DisableControlAction(0, 143, true)
+        DisableControlAction(0, 75,  true)
+        DisableControlAction(27, 75, true)
+        SetPlayerCanDoDriveBy(PlayerId(), false)
     end
     SetNuiFocus(false, false)
+    SetNuiFocusKeepInput(false)
+    local count, keys = 0, {177, 200, 202, 322}
+    while count < 100 do 
+        Wait(0)
+        count=count+1
+        for c, d in pairs(keys) do
+            DisableControlAction(0, d, true)
+        end
+    end
 end)
 
 function CheckIfSynced(data)

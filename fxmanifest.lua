@@ -2,7 +2,7 @@ fx_version 'bodacious'
 games { 'gta5' }
 author 'Codesign#2715'
 description 'Weather & Time'
-version '1.2.0'
+version '1.2.1'
 
 client_scripts {
 	'config.lua',
