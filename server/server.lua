@@ -127,7 +127,7 @@ Citizen.CreateThread(function()
 
         if Config.DynamicWeather and Dynamic and not shouldstop then
             WeatherCounter = WeatherCounter+1
-            if WeatherCounter >= (Config.DynamicWeather_time*60*1000/Config.TimeCycleSpeed*1000) then
+            if WeatherCounter >= ( (Config.DynamicWeather_time*60*1000) / (Config.TimeCycleSpeed*1000) ) then
                 WeatherCounter = 0
                 if #Group >= TimesChanged then
                     local TableCleared = true
