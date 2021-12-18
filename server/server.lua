@@ -269,14 +269,14 @@ end)
 AddEventHandler('txAdmin:events:scheduledRestart', function(eventData)
     if eventData.secondsRemaining == math.ceil(Config.TsunamiCountdown_time*60) then
         SaveSettngs()
-        TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1)
+        TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, true)
     end
 end)
 
 RegisterServerEvent('cd_easytime:StartTsunamiCountdown')
 AddEventHandler('cd_easytime:StartTsunamiCountdown', function(boolean)
     self.tsunami = boolean
-    TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1)
+    TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, boolean)
 end)
 
 function PermissionsCheck(source)
