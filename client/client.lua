@@ -280,12 +280,13 @@ end)
 local TsunamiCanceled = false
 RegisterNetEvent('cd_easytime:StartTsunamiCountdown')
 AddEventHandler('cd_easytime:StartTsunamiCountdown', function(boolean)
+    if not Config.TsunamiWarning then return end
     if boolean then
         PauseSync.state = true
         PauseSync.time = self.hours
         TsunamiCanceled = false
-        ChangeWeather('HALLOWEEN', false, Config.TsunamiCountdown_time*60*1000/4/1000+0.0)
-        Wait(Config.TsunamiCountdown_time*60*1000/4*2)
+        ChangeWeather('HALLOWEEN', false, Config.TsunamiWarning_time*60*1000/4/1000+0.0)
+        Wait(Config.TsunamiWarning_time*60*1000/4*2)
         if TsunamiCanceled then return end
         ChangeBlackout(true)
         SendNUIMessage({action = 'playsound'})

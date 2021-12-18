@@ -115,7 +115,7 @@ AddEventHandler('cd_easytime:ForceUpdate', function(data)
             self.instantweather = data.instantweather
         end
         TriggerClientEvent('cd_easytime:ForceUpdate', -1, data)
-        if data.tsunami ~= nil then
+        if data.tsunami ~= nil and Config.TsunamiWarning then
             self.tsunami = data.tsunami
             TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, data.tsunami)
         end
@@ -267,14 +267,16 @@ AddEventHandler('onResourceStop', function(resource)
 end)
 
 AddEventHandler('txAdmin:events:scheduledRestart', function(eventData)
-    if eventData.secondsRemaining == math.ceil(Config.TsunamiCountdown_time*60) then
+    if eventData.secondsRemaining == math.ceil(Config.TsunamiWarning_time*60) then
         SaveSettngs()
+        if not Config.TsunamiWarning then return end
         TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, true)
     end
 end)
 
 RegisterServerEvent('cd_easytime:StartTsunamiCountdown')
 AddEventHandler('cd_easytime:StartTsunamiCountdown', function(boolean)
+    if not Config.TsunamiWarning then return end
     self.tsunami = boolean
     TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, boolean)
 end)

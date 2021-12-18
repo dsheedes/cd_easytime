@@ -45,8 +45,8 @@ Config.Command = {
 --██║ ╚═╝ ██║██║  ██║██║██║ ╚████║
 --╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
 
-Config.TsunamiCountdown = true --Do you want to enable the tsunami warning countdown just before a server restart?
-Config.TsunamiCountdown_time = 2 --(in minutes) How long the tsunami warning should last. So by default the event to start this needs to be triggered 2 minutes before a server restart. (if you use txAdmin, you don't need to do anything exept configure the Config.TsunamiCountdown_time value and it will start automatically).
+Config.TsunamiWarning = true --Do you want to enable the tsunami warning countdown just before a server restart?
+Config.TsunamiWarning_time = 2 --(in minutes) How long the tsunami warning should last. Read the docs for more info.
 
 Config.TimeCycleSpeed = 2 --(in seconds) Changing this value will effects the day/night time cycle, decreasing slows it down, incresing speeds it up. Right now its similar to the default gta5 time cycle.
 Config.DynamicWeather_time = 10 --(in minutes) If dynamic weather is enabled, this value is how long until the weather changes.
