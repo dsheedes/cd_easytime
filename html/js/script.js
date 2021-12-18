@@ -12,6 +12,7 @@ let values = {
     freeze:false,
     instanttime:false,
     instantweather:false,
+    tsunami:false,
 }
 async function generateClouds(){
     let container = $("#easytime-clouds");
@@ -116,7 +117,7 @@ function updateTimeDisplay(t){
     if(t)
         time = convertTime(t);
     else time = convertTime($("#easytime-range").val());
-    values.time = time;
+    values.hours = time;
     updateBackground(time);
     let newTime;
     if(settings.using24hr){
@@ -145,36 +146,48 @@ window.addEventListener("message", function(event){
 
         let id = "#easytime-weather-"+values.weather.toLowerCase();
 
-        $(id).attr("checked", "checked");
+        $(".easytime-weather-setting").each((index, element) => {
+            $( element ).prop("checked", false); // Remove all current settings
+        });
 
-        updateTimeDisplay(((values.time >=1 && values.time <= 7)?values.time+24:values.time));
-        tc = ((values.time >=1 && values.time <= 7)?values.time+24:values.time);
+        $(id).prop("checked", true); // Apply the actual active one
+
+
+        updateTimeDisplay(((values.hours >=1 && values.hours <= 7)?values.hours+24:values.hours));
+        tc = ((values.hours >=1 && values.hours <= 7)?values.hours+24:values.hours);
         
         if(values.dynamic){
-            $("#easytime-dynamic").attr("checked", "checked");
-        } else $("#easytime-dynamic").removeAttr("checked");
+            $("#easytime-dynamic").prop("checked", true);
+        } else $("#easytime-dynamic").prop("checked", false);
 
         if(values.blackout){
-            $("#easytime-blackout").attr("checked", "checked");
-        } else $("#easytime-blackout").removeAttr("checked");
+            $("#easytime-blackout").prop("checked", true);
+        } else $("#easytime-blackout").prop("checked", false);
 
         if(values.freeze){
-            $("#easytime-freeze").attr("checked", "checked");
-        } else $("#easytime-freeze").removeAttr("checked");
+            $("#easytime-freeze").prop("checked", true);
+        } else $("#easytime-freeze").prop("checked", false);
 
         if(values.instanttime){
-            $("#easytime-instant-time").attr("checked", "checked");
-        } else $("#easytime-instant-time").removeAttr("checked");
+            $("#easytime-instant-time").prop("checked", true);
+        } else $("#easytime-instant-time").prop("checked", false);
+        
         if(values.instantweather){
-            $("#easytime-instant-weather").attr("checked", "checked");
-        } else $("#easytime-instant-weather").removeAttr("checked");
+            $("#easytime-instant-weather").prop("checked", true);
+        } else $("#easytime-instant-weather").prop("checked", false);
 
-        $("#easytime-range").val(((values.time >=1 && values.time <= 7)?values.time+24:values.time));
+        if(values.tsunami){
+            $("#easytime-tsunami").prop("checked", true);
+        } else $("#easytime-tsunami").prop("checked", false);
+
+        $("#easytime-range").val(((values.hours >=1 && values.hours <= 7)?values.hours+24:values.hours));
 
         generateClouds();
         generateStars();
     } else if(event.data.action == "close"){
         $("#easytime-card").slideUp(300);
+    } else if(event.data.action == "playsound"){
+        playSound();
     }
 });
 
@@ -203,6 +216,9 @@ $("#easytime-instant-weather").click(() => {
     xhr.open("POST", "https://cd_easytime/instantweather", true);                                                                                                                                                                                                                                                                                                                                      
     xhr.send(JSON.stringify({instantweather:values.instantweather}));
 })
+$("#easytime-tsunami").click(() => {
+    values.tsunami = !values.tsunami;
+});
 $("#easytime-button-close").on("click", function() {
     window.postMessage({action:"close"});
     closeUI();
@@ -210,7 +226,7 @@ $("#easytime-button-close").on("click", function() {
 $("#easytime-button-change").on("click", function() {
     window.postMessage({action:"close"});
 
-    if(tc == values.time){
+    if(tc == values.hours){
         easyTimeChange({
             weather:values.weather,
             blackout:values.blackout,
@@ -218,6 +234,7 @@ $("#easytime-button-change").on("click", function() {
             dynamic:values.dynamic,
             instanttime:values.instanttime,
             instantweather:values.instantweather,
+            tsunami:values.tsunami,
         }, false);
     } else easyTimeChange(values, false);
     
@@ -228,7 +245,7 @@ $("#easytime-button-save").on("click", () => {
 
     window.postMessage({action:"close"});
 
-    if(tc == values.time){
+    if(tc == values.hours){
         easyTimeChange({
             weather:values.weather,
             blackout:values.blackout,
@@ -236,11 +253,37 @@ $("#easytime-button-save").on("click", () => {
             dynamic:values.dynamic,
             instanttime:values.instanttime,
             instantweather:values.instantweather,
+            tsunami:values.tsunami,
         }, true);
     } else easyTimeChange({values}, true);
 });
+let tsunamiSound;
+let tsunamiSoundAvailable = true;
+
 $(document).ready(function() {
     $(function () {
         $('[data-toggle="tooltip"]').tooltip()
-      })
+      });
+
+    tsunamiSound = new Audio('sound/tsunami_siren.ogg');
 })
+
+window.addEventListener("keydown", (e) => {
+    if (e.code == "Escape" || e.key == "Escape") {
+        window.postMessage({action:"close"});
+        closeUI();
+    }
+});
+
+function playSound(){
+    if(tsunamiSoundAvailable){ // Check if the sound stopped playing
+        
+        tsunamiSoundAvailable = false; // Set the avaliability to false, since we are going to play it now.
+        tsunamiSound.volume = 0.5; // Set the volume to 0.5 (or adjust to your own preference)
+
+        tsunamiSound.play().then(() => {
+            tsunamiSound.currentTime = 0; // Reset the position to start
+            tsunamiSoundAvailable = true; // Sound stopped playing, so it is now avaliable
+        });
+      }
+}

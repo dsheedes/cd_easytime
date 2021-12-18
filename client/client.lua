@@ -1,121 +1,185 @@
-local Weather = 'CLEAR'
-local Blackout = false
-local Dynamic = false
-local FreezeTime = false
-local NUI_status = false
-local PauseSync = false
-local Hours = 8
-local Mins = 0
-local Seconds = 0
-local InstantTimeChange = false
-local InstantWeatherChange = false
-local SyncHours = nil
-local SyncMins = nil
-local CB = {}
-local CB_id = 0
+--███████╗██████╗  █████╗ ███╗   ███╗███████╗██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗
+--██╔════╝██╔══██╗██╔══██╗████╗ ████║██╔════╝██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝
+--█████╗  ██████╔╝███████║██╔████╔██║█████╗  ██║ █╗ ██║██║   ██║██████╔╝█████╔╝ 
+--██╔══╝  ██╔══██╗██╔══██║██║╚██╔╝██║██╔══╝  ██║███╗██║██║   ██║██╔══██╗██╔═██╗ 
+--██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗╚███╔███╔╝╚██████╔╝██║  ██║██║  ██╗
+--╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
+
+
+ESX, QBCore = nil, nil
 
 Citizen.CreateThread(function()
-    SetNuiFocus(false, false)
-    while not NetworkIsSessionStarted() do Citizen.Wait(1000) end
-    TriggerServerEvent('cd_easytime:SyncMe', {time = true, weather = true})
+    if Config.Framework == 'esx' then
+        while ESX == nil do
+            TriggerEvent(Config.FrameworkTriggers.main, function(obj) ESX = obj end)
+            Wait(100)
+        end
+
+        RegisterNetEvent(Config.FrameworkTriggers.load)
+        AddEventHandler(Config.FrameworkTriggers.load, function(xPlayer)
+            ESX.PlayerData = xPlayer
+            Wait(3000)
+            TriggerServerEvent('cd_easytime:SyncMe', {time = true, weather = true})
+        end)
+
+        RegisterNetEvent(Config.FrameworkTriggers.job)
+        AddEventHandler(Config.FrameworkTriggers.job, function(job)
+            ESX.PlayerData.job = job
+        end)
+    
+
+    elseif Config.Framework == 'qbcore' then
+        while QBCore == nil do
+            TriggerEvent(Config.FrameworkTriggers.main, function(obj) QBCore = obj end)
+            if QBCore == nil then
+                QBCore = exports[Config.FrameworkTriggers.resource_name]:GetCoreObject()
+            end
+            Wait(100)
+        end
+
+        RegisterNetEvent(Config.FrameworkTriggers.load)
+        AddEventHandler(Config.FrameworkTriggers.load, function()
+            Wait(3000)
+            TriggerServerEvent('cd_easytime:SyncMe', {time = true, weather = true})
+        end)
+
+        RegisterNetEvent(Config.FrameworkTriggers.job)
+        AddEventHandler(Config.FrameworkTriggers.job, function(JobInfo)
+            QBCore.Functions.GetPlayerData().job = JobInfo
+        end)
+    
+
+    elseif Config.Framework == 'vrp' or Config.Framework == 'aceperms' then
+        Citizen.CreateThread(function()
+            Wait(3000)
+            while true do
+                Wait(1000)
+                if NetworkIsSessionStarted() then
+                    TriggerServerEvent('cd_easytime:SyncMe', {time = true, weather = true})
+                    break
+                end
+            end
+        end)
+
+    elseif Config.Framework == 'other' then
+        --Add your framework code here.
+
+    end
 end)
 
+
+--███╗   ███╗ █████╗ ██╗███╗   ██╗
+--████╗ ████║██╔══██╗██║████╗  ██║
+--██╔████╔██║███████║██║██╔██╗ ██║
+--██║╚██╔╝██║██╔══██║██║██║╚██╗██║
+--██║ ╚═╝ ██║██║  ██║██║██║ ╚████║
+--╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
+
+
+local self = {}
+self.seconds = 0
+local NUI_status = false
+local PauseSync = {}
+PauseSync.state = false
+local SyncHours = nil
+local SyncMins = nil
+
+
 RegisterNetEvent('cd_easytime:PauseSync')
-AddEventHandler('cd_easytime:PauseSync', function(boolean)
+AddEventHandler('cd_easytime:PauseSync', function(boolean, time)
     if boolean then
-        PauseSync = true
-        ChangeWeather('EXTRASUNNY', Blackout, true)
+        PauseSync.state = true
+        PauseSync.time = time or 20
+        ChangeWeather('EXTRASUNNY', true)
+        ChangeBlackout(self.blackout)
     else
-        PauseSync = false
-        TriggerServerEvent('cd_easytime:SyncMe', {time = true, weather = true})
+        PauseSync.state = false
+        TriggerServerEvent('cd_easytime:SyncMe')
     end
 end)
 
 RegisterNetEvent('cd_easytime:ForceUpdate')
-AddEventHandler('cd_easytime:ForceUpdate', function(data, instant, first_sync)
-    if not PauseSync then
+AddEventHandler('cd_easytime:ForceUpdate', function(data)
+    if not PauseSync.state then
+        self.freeze = data.freeze
         if data.weather ~= nil then
             CheckSnowSync(data.weather)
-            Weather = data.weather
-            Blackout = data.blackout
-            FreezeTime = data.freeze
-            ChangeWeather(Weather, Blackout, instant.weather)
+            self.weather = data.weather
+            self.blackout = data.blackout
+            ChangeWeather(self.weather, data.instantweather)
+            ChangeBlackout(self.blackout)
         end
         if data.hours ~= nil then
             local newhours = GetClockHours()
-            NetworkOverrideClockTime(newhours, data.mins, Seconds)
-            if not instant.time then
-                for i=1, 24 do
+            NetworkOverrideClockTime(newhours, data.mins, self.seconds)
+            if not data.instanttime then
+                for cd_1 = 1, 24 do
                     newhours = newhours+1
                     if newhours == 24 then newhours = 0 end
                     if newhours < 24 then
-                        Hours = newhours
-                        Mins = data.mins
-                        for i=1, 60 do
+                        self.hours = newhours
+                        self.mins = data.mins
+                        for cd_2 = 1, 60 do
                             Wait(10)
-                            NetworkOverrideClockTime(newhours, i, Seconds)
+                            NetworkOverrideClockTime(newhours, cd_2, self.seconds)
                         end
                     end
                     if newhours == data.hours then break end
                 end
-            elseif instant.time or FreezeTime then
-                Hours = data.hours
-                Mins = data.mins
-                NetworkOverrideClockTime(Hours, Mins, Seconds)
+            elseif data.instanttime or self.freeze then
+                self.hours = data.hours
+                self.mins = data.mins
+                NetworkOverrideClockTime(self.hours, self.mins, self.seconds)
             end
         end
-        if first_sync then
-            CheckIfSynced(data)
+        if data.blackout ~= nil then
+            self.blackout = data.blackout
+            ChangeBlackout(self.blackout)
         end
     end   
 end)
 
 RegisterNetEvent('cd_easytime:SyncWeather')
-AddEventHandler('cd_easytime:SyncWeather', function(data, instant, sync_checking)
-    if not PauseSync then
+AddEventHandler('cd_easytime:SyncWeather', function(data)
+    if not PauseSync.state then
         CheckSnowSync(data.weather)
-        Weather = data.weather
-        Blackout = data.blackout
-        ChangeWeather(Weather, Blackout, instant)
-        if sync_checking then
-            CheckIfSynced(data)
-        end
+        self.weather = data.weather
+        ChangeWeather(self.weather, data.instantweather)
     end
 end)
 
 RegisterNetEvent('cd_easytime:SyncTime')
-AddEventHandler('cd_easytime:SyncTime', function(data, sync_checking)
-    if not PauseSync then
+AddEventHandler('cd_easytime:SyncTime', function(data)
+    if not PauseSync.state then
         SyncHours = data.hours
         SyncMins = data.mins
-        if sync_checking then
-            CheckIfSynced(data)
-        end
     end
 end)
 
 Citizen.CreateThread(function()
     while true do
-        if not PauseSync then
-            if not FreezeTime then
-                NetworkOverrideClockTime(Hours, Mins, Seconds)
-                Seconds = Seconds+30
-                if SyncHours ~= nil and SyncMins ~= nil then
-                    Hours = SyncHours
-                    Mins = SyncMins
-                    SyncHours = nil
-                    SyncMins = nil
+        if self.hours ~= nil and self.mins ~= nil then
+            if not PauseSync.state then
+                if not self.freeze then
+                    NetworkOverrideClockTime(self.hours, self.mins, self.seconds)
+                    self.seconds = self.seconds+30
+                    if SyncHours ~= nil and SyncMins ~= nil then
+                        self.hours = SyncHours
+                        self.mins = SyncMins
+                        SyncHours = nil
+                        SyncMins = nil
+                    end
+                    if self.seconds >= 60 then self.seconds = 0 self.mins = self.mins+1 end
+                    if self.mins >= 60 then self.mins = 0 self.hours = self.hours+1 end
+                    if self.hours >= 24 then self.hours = 0 end
+                else
+                    NetworkOverrideClockTime(self.hours, self.mins, self.seconds)
                 end
-                if Seconds >= 60 then Seconds = 0 Mins = Mins+1 end
-                if Mins >= 60 then Mins = 0 Hours = Hours+1 end
-                if Hours >= 24 then Hours = 0 end
             else
-                NetworkOverrideClockTime(Hours, Mins, Seconds)
+                NetworkOverrideClockTime(PauseSync.time, 00, 00)
             end
-        else
-            NetworkOverrideClockTime(20, 00, 00)
         end
-        Citizen.Wait(Config.TimeCycleSpeed*1000/2)
+        Wait(Config.TimeCycleSpeed*1000/2)
     end
 end)
 
@@ -133,18 +197,17 @@ end)
 
 RegisterNUICallback('change', function(data)
     NUI_status = false
-    local settings = data.values
-    TriggerServerEvent('cd_easytime:ForceUpdate', {weather = settings.weather, hours = settings.time, dynamic = settings.dynamic, blackout = settings.blackout, freeze = settings.freeze, instanttime = settings.instanttime, instantweather = settings.instantweather}, nil)
+    TriggerServerEvent('cd_easytime:ForceUpdate', data.values)
     if data.savesettings then
         print('Saving Settings - please wait 3 seconds ...')
-        Citizen.Wait(3000)
+        Wait(3000)
         TriggerServerEvent('cd_easytime:SaveSettings')
         print('Settings Saved.')
     end
 end)
 
 function CheckSnowSync(NewWeather)
-    if Weather == 'XMAS' then
+    if self.weather == 'XMAS' then
         SetForceVehicleTrails(false)
         SetForcePedFootstepsTracks(false)
     elseif NewWeather == 'XMAS' then
@@ -153,35 +216,28 @@ function CheckSnowSync(NewWeather)
     end
 end
 
-function ChangeWeather(weather, blackout, instant)
+function ChangeWeather(weather, instant, changespeed)
     if instant then
-        SetBlackout(blackout)
         ClearOverrideWeather()
         ClearWeatherTypePersist()
         SetWeatherTypePersist(weather)
         SetWeatherTypeNow(weather)
         SetWeatherTypeNowPersist(weather)
     else
-        SetBlackout(blackout)
         ClearOverrideWeather()
-        SetWeatherTypeOvertimePersist(weather, 180.0) --180.0 takes around 3 minutes to fully change the weather.
+        SetWeatherTypeOvertimePersist(weather, changespeed or 180.0)
     end
+end
+
+function ChangeBlackout(blackout)
+    SetBlackout(blackout)
 end
 
 RegisterNetEvent('cd_easytime:OpenUI')
 AddEventHandler('cd_easytime:OpenUI', function(values)
-    Open_UI(values)
-end)
-
-function Open_UI(values)
     TriggerEvent('cd_easytime:ToggleNUIFocus')
     SendNUIMessage({action = 'open', values = values})
-end
-
-function Close_UI()
-    NUI_status = false
-    SendNUIMessage({action = 'close'})
-end
+end)
 
 RegisterNetEvent('cd_easytime:ToggleNUIFocus')
 AddEventHandler('cd_easytime:ToggleNUIFocus', function()
@@ -221,33 +277,21 @@ AddEventHandler('cd_easytime:ToggleNUIFocus', function()
     end
 end)
 
-function CheckIfSynced(data)
-    local result = true
-    if Weather ~= data.weather or Blackout ~= data.blackout or FreezeTime ~= data.freeze then
-        TriggerEvent('cd_easytime:SyncWeather', json.decode(Callback()), true, true)
-        print('WEATHER SYNC CHECK FAILED - RESYNCING NOW')
-        result = false
+local TsunamiCanceled = false
+RegisterNetEvent('cd_easytime:StartTsunamiCountdown')
+AddEventHandler('cd_easytime:StartTsunamiCountdown', function(boolean)
+    if boolean then
+        PauseSync.state = true
+        PauseSync.time = self.hours
+        TsunamiCanceled = false
+        ChangeWeather('HALLOWEEN', false, Config.TsunamiCountdown_time*60*1000/4/1000+0.0)
+        Wait(Config.TsunamiCountdown_time*60*1000/4*2)
+        if TsunamiCanceled then return end
+        ChangeBlackout(true)
+        SendNUIMessage({action = 'playsound'})
+    else
+        PauseSync.state = false
+        TsunamiCanceled = true
+        TriggerServerEvent('cd_easytime:SyncMe')
     end
-    if Hours ~= data.hours then
-        TriggerEvent('cd_easytime:SyncTime', json.decode(Callback()), true)
-        print('TIME SYNC CHECK FAILED - RESYNCING NOW')
-        result = false
-    end
-    if result then
-        print('SYNC CHECK COMPLETE')
-    end
-end
-
-function Callback(plate)
-    CB_id = CB_id + 1
-    TriggerServerEvent('cd_easytime:Callback', CB_id, plate)
-    local timeout = 0 while CB[CB_id] == nil and timeout <= 50 do Citizen.Wait(0) timeout=timeout+1 end
-    return CB[CB_id]
-end
-
-RegisterNetEvent('cd_easytime:Callback')
-AddEventHandler('cd_easytime:Callback', function(id, result)
-    CB[id] = result
-    Wait(5000)
-    CB[id] = nil
 end)
