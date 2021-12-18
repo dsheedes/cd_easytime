@@ -116,7 +116,6 @@ AddEventHandler('cd_easytime:ForceUpdate', function(data)
         end
         TriggerClientEvent('cd_easytime:ForceUpdate', -1, data)
         if data.tsunami ~= nil and Config.TsunamiWarning then
-            self.tsunami = data.tsunami
             TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, data.tsunami)
         end
     else
@@ -134,7 +133,6 @@ local function LoadSettings()
     self.freeze = settings.freeze or false
     self.instanttime = settings.instanttime or false
     self.instantweather = settings.instantweather or false
-    self.tsunami = false
     print('^3['..resource_name..'] - Saved settings applied.^0')
     if Config.Framework ~= 'vrp' or Config.Framework ~= 'aceperms' then
         Wait(2000)
@@ -277,7 +275,6 @@ end)
 RegisterServerEvent('cd_easytime:StartTsunamiCountdown')
 AddEventHandler('cd_easytime:StartTsunamiCountdown', function(boolean)
     if not Config.TsunamiWarning then return end
-    self.tsunami = boolean
     TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, boolean)
 end)
 
