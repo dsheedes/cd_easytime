@@ -78,6 +78,7 @@ end)
 
 local self = {}
 self.seconds = 0
+self.tsunami = false
 local NUI_status = false
 local PauseSync = {}
 PauseSync.state = false
@@ -136,7 +137,11 @@ AddEventHandler('cd_easytime:ForceUpdate', function(data)
             self.blackout = data.blackout
             ChangeBlackout(self.blackout)
         end
-    end   
+    end
+    if data.tsunami ~= nil and Config.TsunamiWarning and self.tsunami ~= data.tsunami then
+        self.tsunami = data.tsunami
+        TriggerEvent('cd_easytime:StartTsunamiCountdown', data.tsunami)
+    end
 end)
 
 RegisterNetEvent('cd_easytime:SyncWeather')
@@ -199,8 +204,8 @@ RegisterNUICallback('change', function(data)
     NUI_status = false
     TriggerServerEvent('cd_easytime:ForceUpdate', data.values)
     if data.savesettings then
-        print('Saving Settings - please wait 3 seconds ...')
-        Wait(3000)
+        print('Saving Settings - please wait 2 seconds ...')
+        Wait(2000)
         TriggerServerEvent('cd_easytime:SaveSettings')
         print('Settings Saved.')
     end

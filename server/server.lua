@@ -59,7 +59,7 @@ end)
 RegisterServerEvent('cd_easytime:SyncMe')
 AddEventHandler('cd_easytime:SyncMe', function(instant)
     local _source = source
-    local temp = self
+    local temp = json.decode(json.encode(self))
     temp.instanttime = true
     temp.instantweather = true
     TriggerClientEvent('cd_easytime:ForceUpdate', _source, temp)
@@ -114,11 +114,10 @@ AddEventHandler('cd_easytime:ForceUpdate', function(data)
         if data.instantweather ~= nil then
             self.instantweather = data.instantweather
         end
-        TriggerClientEvent('cd_easytime:ForceUpdate', -1, data)
         if data.tsunami ~= nil and Config.TsunamiWarning then
             self.tsunami = data.tsunami
-            TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, data.tsunami)
         end
+        TriggerClientEvent('cd_easytime:ForceUpdate', -1, data)
     else
         DropPlayer(_source, L('drop_player'))
     end
@@ -138,7 +137,7 @@ local function LoadSettings()
     print('^3['..resource_name..'] - Saved settings applied.^0')
     if Config.Framework ~= 'vrp' or Config.Framework ~= 'aceperms' then
         Wait(2000)
-        local temp = self
+        local temp = json.decode(json.encode(self))
         temp.instanttime = true
         temp.instantweather = true
         TriggerClientEvent('cd_easytime:ForceUpdate', -1, temp)
@@ -293,7 +292,7 @@ function PermissionsCheck(source)
         end
         return false
     
-    elseif Config.Framework == 'qbus' then
+    elseif Config.Framework == 'qbcore' then
         local xPlayer = QBCore.Functions.GetPlayer(source)
         local perms = QBCore.Functions.GetPermission(source)
         for c, d in pairs(Config.Command.Perms[Config.Framework]) do
