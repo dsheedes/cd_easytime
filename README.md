@@ -20,7 +20,7 @@ https://docs.codesign.pro/free-scripts/easytime-time-and-weather-management
 
 The default command to open the UI is /easytime. Make sure to configure the Config.Framework.
 
-### Conflicts
+## Conflicts
 
 It is possible that Easytime conflicts with other time and weather scripts such as vMenu or vSync.
 
