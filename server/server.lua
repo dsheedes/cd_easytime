@@ -310,7 +310,7 @@ function PermissionsCheck(source)
         end
         return false
 
-    elseif Config.Framework == 'none' then
+    elseif Config.Framework == 'aceperms' then
         for c, d in pairs(Config.Command.Perms[Config.Framework]) do
             if IsPlayerAceAllowed(source, d) then
                 return true
