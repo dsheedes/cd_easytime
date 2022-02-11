@@ -35,7 +35,10 @@ Config.Command = {
         ['other'] = {'change_me', 'change_me'}
     }
 }
-
+Config.admins = {
+    'steam:blahblahblahblah',
+    'license:blahblahblahblah',
+}
 
 --███╗   ███╗ █████╗ ██╗███╗   ██╗
 --████╗ ████║██╔══██╗██║████╗  ██║
