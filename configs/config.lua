@@ -10,7 +10,7 @@ function L(cd) if Locales[Config.Language][cd] then return Locales[Config.Langua
 --╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
 
 
-Config.Framework = 'esx' ---[ 'esx' / 'qbcore' / 'vrp' / 'aceperms' / 'other' ] Choose your framework.
+Config.Framework = 'esx' ---[ 'esx' / 'qbcore' / 'vrp' / 'standalone' / 'other' ] Choose your framework.
 Config.Language = 'EN' --[ 'EN' / 'FR' / 'ES' ] You can add your own locales to the Locales.lua. But make sure to add it here.
 
 Config.FrameworkTriggers = { --You can change the esx/qbcore events (IF NEEDED).
@@ -32,7 +32,6 @@ Config.Command = {
         ['esx'] = {'superadmin', 'admin', 'mod'},
         ['qbcore'] = {'god', 'admin'},
         ['vrp'] = {'change_me', 'change_me'},
-        ['aceperms'] = {'change_me', 'change_me'},
         ['other'] = {'change_me', 'change_me'}
     }
 }
