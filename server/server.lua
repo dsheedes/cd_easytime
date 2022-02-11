@@ -135,7 +135,7 @@ local function LoadSettings()
     self.instantweather = settings.instantweather or false
     self.tsunami = false
     print('^3['..resource_name..'] - Saved settings applied.^0')
-    if Config.Framework ~= 'vrp' or Config.Framework ~= 'aceperms' then
+    if Config.Framework ~= 'vrp' or Config.Framework ~= 'standalone' then
         Wait(2000)
         local temp = json.decode(json.encode(self))
         temp.instanttime = true
@@ -310,14 +310,16 @@ function PermissionsCheck(source)
         end
         return false
 
-    elseif Config.Framework == 'aceperms' then
-        for c, d in pairs(Config.Command.Perms[Config.Framework]) do
-            if IsPlayerAceAllowed(source, d) then
-                return true
+    elseif Config.Framework == 'standalone' then
+            for c, d in ipairs(Config.admins) do
+                for cc, dd in ipairs(GetPlayerIdentifiers(source)) do
+                    if string.lower(dd) == string.lower(d) then
+                    return true
+                end
             end
         end
         return false
-    
+
     elseif Config.Framework == 'other' then
         --Add your own permissions check here (boolean).
         return true
