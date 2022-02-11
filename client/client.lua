@@ -49,7 +49,7 @@ Citizen.CreateThread(function()
         end)
     
 
-    elseif Config.Framework == 'vrp' or Config.Framework == 'aceperms' then
+    elseif Config.Framework == 'vrp' or Config.Framework == 'standalone' then
         Citizen.CreateThread(function()
             Wait(3000)
             while true do
