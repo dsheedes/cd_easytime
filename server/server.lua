@@ -309,15 +309,11 @@ function PermissionsCheck(source)
             end
         end
         return false
-
     elseif Config.Framework == 'aceperms' then
-        for c, d in pairs(Config.Command.Perms[Config.Framework]) do
-            if IsPlayerAceAllowed(source, d) then
-                return true
-            end
+        if IsPlayerAceAllowed(source, "command."..Config.Command.OpenUI) then
+            return true
         end
         return false
-    
     elseif Config.Framework == 'other' then
         --Add your own permissions check here (boolean).
         return true
