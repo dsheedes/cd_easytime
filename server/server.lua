@@ -285,7 +285,7 @@ function PermissionsCheck(source)
     if Config.Framework == 'esx' then 
         local xPlayer = ESX.GetPlayerFromId(source)
         local perms = xPlayer.getGroup()
-        for c, d in pairs(Config.Command.Perms[Config.Framework]) do
+        for c, d in ipairs(Config.Command.Perms[Config.Framework]) do
             if perms == d then
                 return true
             end
@@ -293,11 +293,16 @@ function PermissionsCheck(source)
         return false
     
     elseif Config.Framework == 'qbcore' then
-        local xPlayer = QBCore.Functions.GetPlayer(source)
         local perms = QBCore.Functions.GetPermission(source)
-        for c, d in pairs(Config.Command.Perms[Config.Framework]) do
-            if perms == d then
-                return true
+        for c, d in ipairs(Config.Command.Perms[Config.Framework]) do
+            if type(perms) == 'string' then
+                if perms == d then
+                    return true
+                end
+            elseif type(perms) == 'table' then
+                if perms[d] then
+                    return true
+                end
             end
         end
         return false
@@ -309,11 +314,23 @@ function PermissionsCheck(source)
             end
         end
         return false
+
     elseif Config.Framework == 'aceperms' then
-        if IsPlayerAceAllowed(source, "command."..Config.Command.OpenUI) then
+        if IsPlayerAceAllowed(source, 'command.'..Config.Command.OpenUI) then
             return true
         end
         return false
+
+    elseif Config.Framework == 'identifiers' then
+        for c, d in ipairs(Config.Command.Perms[Config.Framework]) do
+            for cc, dd in ipairs(GetPlayerIdentifiers(source)) do
+                if string.lower(dd) == string.lower(d) then
+                return true
+            end
+        end
+    end
+    return false
+
     elseif Config.Framework == 'other' then
         --Add your own permissions check here (boolean).
         return true

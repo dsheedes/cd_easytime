@@ -21,13 +21,7 @@ Citizen.CreateThread(function()
             Wait(3000)
             TriggerServerEvent('cd_easytime:SyncMe', {time = true, weather = true})
         end)
-
-        RegisterNetEvent(Config.FrameworkTriggers.job)
-        AddEventHandler(Config.FrameworkTriggers.job, function(job)
-            ESX.PlayerData.job = job
-        end)
     
-
     elseif Config.Framework == 'qbcore' then
         while QBCore == nil do
             TriggerEvent(Config.FrameworkTriggers.main, function(obj) QBCore = obj end)
@@ -42,14 +36,8 @@ Citizen.CreateThread(function()
             Wait(3000)
             TriggerServerEvent('cd_easytime:SyncMe', {time = true, weather = true})
         end)
-
-        RegisterNetEvent(Config.FrameworkTriggers.job)
-        AddEventHandler(Config.FrameworkTriggers.job, function(JobInfo)
-            QBCore.Functions.GetPlayerData().job = JobInfo
-        end)
     
-
-    elseif Config.Framework == 'vrp' or Config.Framework == 'aceperms' then
+    elseif Config.Framework == 'vrp' or Config.Framework == 'aceperms' or Config.Framework == 'identifiers' then
         Citizen.CreateThread(function()
             Wait(3000)
             while true do
@@ -84,7 +72,6 @@ local PauseSync = {}
 PauseSync.state = false
 local SyncHours = nil
 local SyncMins = nil
-
 
 RegisterNetEvent('cd_easytime:PauseSync')
 AddEventHandler('cd_easytime:PauseSync', function(boolean, time)
@@ -236,6 +223,7 @@ end
 
 function ChangeBlackout(blackout)
     SetArtificialLightsState(blackout)
+    SetArtificialLightsStateAffectsVehicles(Config.VehicleBlackoutEffect)
 end
 
 RegisterNetEvent('cd_easytime:OpenUI')
@@ -248,7 +236,7 @@ RegisterNetEvent('cd_easytime:ToggleNUIFocus')
 AddEventHandler('cd_easytime:ToggleNUIFocus', function()
     NUI_status = true
     while NUI_status do
-        Wait(5)
+        Wait(0)
         SetNuiFocus(NUI_status, NUI_status)
         SetNuiFocusKeepInput(NUI_status)
         DisableControlAction(0, 1,   true)

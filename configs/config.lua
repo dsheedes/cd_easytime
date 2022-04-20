@@ -10,7 +10,7 @@ function L(cd) if Locales[Config.Language][cd] then return Locales[Config.Langua
 --╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
 
 
-Config.Framework = 'esx' ---[ 'esx' / 'qbcore' / 'vrp' / 'aceperms' / 'other' ] Choose your framework.
+Config.Framework = 'esx' ---[ 'esx' / 'qbcore' / 'vrp' / 'aceperms' / 'identifiers', 'other' ] Choose your framework (by framework we mean choose the permission system you want to use).
 Config.Language = 'EN' --[ 'EN' / 'FR' / 'ES' ] You can add your own locales to the Locales.lua. But make sure to add it here.
 
 Config.FrameworkTriggers = { --You can change the esx/qbcore events (IF NEEDED).
@@ -33,6 +33,7 @@ Config.Command = {
         ['qbcore'] = {'god', 'admin'},
         ['vrp'] = {'change_me', 'change_me'},
         ['aceperms'] = {'change_me', 'change_me'},
+        ['identifiers'] = {'steam:xxxxx', 'license:xxxxx'},
         ['other'] = {'change_me', 'change_me'}
     }
 }
@@ -53,6 +54,7 @@ Config.DynamicWeather_time = 10 --(in minutes) If dynamic weather is enabled, th
 Config.RainChance = 10 --The percent chance for it to rain out of 100.
 Config.SnowChance = 1 --The percent chance for it to snow out of 100.
 Config.ThunderChance = 20 --The percent chance for it to thunder when raining out of 100.
+Config.VehicleBlackoutEffect = false --Do you want the lights on vehicles to be turned off during blackouts?
 
 Config.WeatherGroups = { --These are the weather groups, it will cycle through each group from left to right making sure it cycles through low intensity rain to high intensity for example (48 mins for 1 full day cycle).
     [1] = {'CLEAR', 'OVERCAST','EXTRASUNNY', 'CLOUDS'},--clear
