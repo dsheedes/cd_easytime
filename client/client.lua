@@ -235,7 +235,7 @@ function ChangeWeather(weather, instant, changespeed)
 end
 
 function ChangeBlackout(blackout)
-    SetBlackout(blackout)
+    SetArtificialLightsState(blackout)
 end
 
 RegisterNetEvent('cd_easytime:OpenUI')
