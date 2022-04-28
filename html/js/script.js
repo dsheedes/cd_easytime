@@ -255,7 +255,7 @@ $("#easytime-button-save").on("click", () => {
             instantweather:values.instantweather,
             tsunami:values.tsunami,
         }, true);
-    } else easyTimeChange({values}, true);
+    } else easyTimeChange(values, true);
 });
 let tsunamiSound;
 let tsunamiSoundAvailable = true;

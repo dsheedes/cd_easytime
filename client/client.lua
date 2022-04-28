@@ -21,6 +21,11 @@ Citizen.CreateThread(function()
             Wait(3000)
             TriggerServerEvent('cd_easytime:SyncMe', {time = true, weather = true})
         end)
+
+        RegisterNetEvent('vSync:toggle')
+        AddEventHandler('vSync:toggle', function(boolean)
+            TriggerEvent('cd_easytime:PauseSync', boolean)
+        end)
     
     elseif Config.Framework == 'qbcore' then
         while QBCore == nil do
@@ -35,6 +40,16 @@ Citizen.CreateThread(function()
         AddEventHandler(Config.FrameworkTriggers.load, function()
             Wait(3000)
             TriggerServerEvent('cd_easytime:SyncMe', {time = true, weather = true})
+        end)
+
+        RegisterNetEvent('qb-weathersync:client:EnableSync')
+        AddEventHandler('qb-weathersync:client:EnableSync', function()
+            TriggerEvent('cd_easytime:PauseSync', true)
+        end)
+
+        RegisterNetEvent('qb-weathersync:client:DisableSync')
+        AddEventHandler('qb-weathersync:client:DisableSync', function()
+            TriggerEvent('cd_easytime:PauseSync', false)
         end)
     
     elseif Config.Framework == 'vrp' or Config.Framework == 'aceperms' or Config.Framework == 'identifiers' then
@@ -222,8 +237,12 @@ function ChangeWeather(weather, instant, changespeed)
 end
 
 function ChangeBlackout(blackout)
-    SetArtificialLightsState(blackout)
-    SetArtificialLightsStateAffectsVehicles(Config.VehicleBlackoutEffect)
+    if GetGameBuildNumber() >= 2372 then
+        SetArtificialLightsState(blackout)
+        SetArtificialLightsStateAffectsVehicles(Config.VehicleBlackoutEffect)
+    else
+        SetBlackout(blackout)
+    end
 end
 
 RegisterNetEvent('cd_easytime:OpenUI')
