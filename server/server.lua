@@ -170,9 +170,9 @@ Citizen.CreateThread(function()
                 WeatherCounter = 0
                 if #Group >= TimesChanged then
                     local TableCleared = true
-                    for c, d in pairs(Group) do
+                    for _, d in pairs(Group) do
                         if LastWeatherTable[d] == nil then
-                            if v == 'THUNDER' and math.random(1,100) > Config.ThunderChance then
+                            if d == 'THUNDER' and math.random(1,100) > Config.ThunderChance then
                                 break
                             end
                             TimesChanged = TimesChanged+1
