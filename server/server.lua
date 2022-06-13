@@ -337,3 +337,7 @@ function PermissionsCheck(source)
         
     end
 end
+
+function GetWeather()
+    return self
+end

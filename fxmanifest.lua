@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 author 'Codesign#2715'
 description 'Codesign Weather & Time Managment'
-version '1.3.5'
+version '1.3.6'
 
 shared_scripts {
     'configs/locales.lua',
@@ -28,6 +28,14 @@ files {
     'html/font/*.woff2',
     'html/images/**/*.svg',
     'html/sound/*.ogg'
+}
+
+exports {
+    'GetWeather'
+}
+
+server_exports {
+    'GetWeather'
 }
 
 provide 'qb-weathersync'
