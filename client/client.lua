@@ -164,6 +164,7 @@ AddEventHandler('cd_easytime:SyncTime', function(data)
 end)
 
 Citizen.CreateThread(function()
+    NetworkOverrideClockMillisecondsPerGameMinute(Config.TimeCycleSpeed*1000)
     while true do
         if self.hours ~= nil and self.mins ~= nil then
             if not PauseSync.state then
@@ -279,6 +280,7 @@ AddEventHandler('cd_easytime:ToggleNUIFocus', function()
     end
     SetNuiFocus(false, false)
     SetNuiFocusKeepInput(false)
+    SetPlayerCanDoDriveBy(PlayerId(), true)
     local count, keys = 0, {177, 200, 202, 322}
     while count < 100 do 
         Wait(0)
