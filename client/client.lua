@@ -164,7 +164,6 @@ AddEventHandler('cd_easytime:SyncTime', function(data)
 end)
 
 Citizen.CreateThread(function()
-    NetworkOverrideClockMillisecondsPerGameMinute(Config.TimeCycleSpeed*1000)
     while true do
         if self.hours ~= nil and self.mins ~= nil then
             if not PauseSync.state then
@@ -280,7 +279,6 @@ AddEventHandler('cd_easytime:ToggleNUIFocus', function()
     end
     SetNuiFocus(false, false)
     SetNuiFocusKeepInput(false)
-    SetPlayerCanDoDriveBy(PlayerId(), true)
     local count, keys = 0, {177, 200, 202, 322}
     while count < 100 do 
         Wait(0)
@@ -314,3 +312,58 @@ end)
 function GetWeather()
     return self
 end
+
+--███╗   ██╗███████╗██╗    ██╗███████╗    ██████╗  █████╗ ███╗   ██╗███╗   ██╗███████╗██████╗ 
+--████╗  ██║██╔════╝██║    ██║██╔════╝    ██╔══██╗██╔══██╗████╗  ██║████╗  ██║██╔════╝██╔══██╗
+--██╔██╗ ██║█████╗  ██║ █╗ ██║███████╗    ██████╔╝███████║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝
+--██║╚██╗██║██╔══╝  ██║███╗██║╚════██║    ██╔══██╗██╔══██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗
+--██║ ╚████║███████╗╚███╔███╔╝███████║    ██████╔╝██║  ██║██║ ╚████║██║ ╚████║███████╗██║  ██║
+--╚═╝  ╚═══╝╚══════╝ ╚══╝╚══╝ ╚══════╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝
+
+function breakingnews(MainBody)
+	scaleform = RequestScaleformMovie("breaking_news")
+	while not HasScaleformMovieLoaded(scaleform) do
+		Citizen.Wait(0)
+	end
+	
+	PushScaleformMovieFunction(scaleform, "SET_TEXT")
+	PushScaleformMovieFunctionParameterString(MainBody)
+	PushScaleformMovieFunctionParameterString(Config.News.LowerBody)
+	PopScaleformMovieFunctionVoid()
+	
+	PushScaleformMovieFunction(scaleform, "SET_SCROLL_TEXT")
+	PushScaleformMovieFunctionParameterInt(0)
+	PushScaleformMovieFunctionParameterInt(0)
+	PushScaleformMovieFunctionParameterString(Config.News.Header)
+	PopScaleformMovieFunctionVoid()
+	
+	PushScaleformMovieFunction(scaleform, "DISPLAY_SCROLL_TEXT")
+	PushScaleformMovieFunctionParameterInt(0)
+	PushScaleformMovieFunctionParameterInt(0)
+	PopScaleformMovieFunctionVoid()
+	DrawNews = true
+end
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        if DrawNews then
+        	DrawScaleformMovieFullscreen(scaleform, 255, 255, 255, 255, 0)
+        end
+    end
+end)
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        if DrawNews then
+        	Citizen.Wait(15000)
+        	DrawNews = false
+        end
+    end
+end)
+
+RegisterNetEvent("cd_easytime:banner")
+AddEventHandler("cd_easytime:banner", function(MainBody) 
+	breakingnews(MainBody)
+end)

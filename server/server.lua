@@ -56,6 +56,15 @@ RegisterCommand(Config.Command.OpenUI, function(source)
     end
 end)
 
+RegisterCommand('news', function(source, args)
+    local _source = source
+    if _source == 0 or PermissionsCheck(_source) then
+        TriggerClientEvent("cd_easytime:banner", -1, buildstring(args, 1))
+    else
+        Notification(_source, 3, L('invalid_permissions'))
+    end
+end)
+
 RegisterServerEvent('cd_easytime:SyncMe')
 AddEventHandler('cd_easytime:SyncMe', function(instant)
     local _source = source
@@ -270,6 +279,8 @@ AddEventHandler('txAdmin:events:scheduledRestart', function(eventData)
         SaveSettngs()
         if not Config.TsunamiWarning then return end
         self.tsunami = true
+        ExecuteCommand("news TSUNAMI LANDFALL SEEK HIGH GROUND NOW!!")
+        TriggerClientEvent('chatMessage', -1, '', {255,255,255}, '^1[NATIONAL WEATHER SERVICE]: ^8Has issued a TSUNAMI WARNING FOR ALL OF LOS SANTOS.. THERE WAS A 10.0 MAGNITUDE EARTHQUAKE OF THE SHORE OF JAPAN!! A TSUNAMI FOR LOS SANTOS IS IMMINENT!!')
         TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, true)
     end
 end)
@@ -340,4 +351,33 @@ end
 
 function GetWeather()
     return self
+end
+
+--███╗   ██╗███████╗██╗    ██╗███████╗    ██████╗  █████╗ ███╗   ██╗███╗   ██╗███████╗██████╗ 
+--████╗  ██║██╔════╝██║    ██║██╔════╝    ██╔══██╗██╔══██╗████╗  ██║████╗  ██║██╔════╝██╔══██╗
+--██╔██╗ ██║█████╗  ██║ █╗ ██║███████╗    ██████╔╝███████║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝
+--██║╚██╗██║██╔══╝  ██║███╗██║╚════██║    ██╔══██╗██╔══██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗
+--██║ ╚████║███████╗╚███╔███╔╝███████║    ██████╔╝██║  ██║██║ ╚████║██║ ╚████║███████╗██║  ██║
+--╚═╝  ╚═══╝╚══════╝ ╚══╝╚══╝ ╚══════╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝
+
+function buildstring(array, startidx)
+	local str = " "
+	for key,value in pairs(array) do --actualcode
+		if(key >= startidx) then
+			str = str .. array[key] .. " "
+		end
+	end
+	return str
+end
+
+function stringsplit(inputstr, sep)
+    if sep == nil then
+        sep = "%s"
+    end
+    local t={} ; i=1
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        t[i] = str
+        i = i + 1
+    end
+    return t
 end
