@@ -6,6 +6,8 @@
 
 ![674x458](https://i.imgur.com/9kUB0Z7.png)
 
+![674x458](https://i.imgur.com/7mkhyIl.png)
+
 ![](https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png)
 
 
@@ -19,6 +21,13 @@ https://docs.codesign.pro/free-scripts/easytime-time-and-weather-management
 ## How do I use?
 
 The default command to open the UI is /easytime. Make sure to configure the Config.Framework.
+
+## How do I use the News banner?
+/news [MESSAGE] (ADMIN-ONLY)
+
+## TO HAVE IT TRIGGERED FROM A SCRIPT!
+ExecuteCommand("news CHANGE_ME") 
+## DO NOT CHANGE news!!
 
 ## Conflicts
 
