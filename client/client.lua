@@ -92,7 +92,11 @@ RegisterNetEvent('cd_easytime:PauseSync')
 AddEventHandler('cd_easytime:PauseSync', function(boolean, time)
     if boolean then
         PauseSync.state = true
-        PauseSync.time = time or 20
+        if Config.LoafHousing then
+            PauseSync.time = time or 12
+        else
+            PauseSync.time = time or 20
+        end
         ChangeWeather('EXTRASUNNY', true)
         ChangeBlackout(self.blackout)
     else
