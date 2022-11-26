@@ -62,3 +62,5 @@ Config.WeatherGroups = { --These are the weather groups, it will cycle through e
     [3] = {'SMOG', 'FOGGY'},--foggy
     [4] = {'SNOWLIGHT', 'SNOW', 'BLIZZARD', 'XMAS'},--snow
 }
+
+Config.LoafHousing = true -- If using loaf housing and having issues with orange tint when inside an instance
