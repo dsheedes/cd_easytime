@@ -128,7 +128,7 @@ local function LoadSettings()
     self.weather = settings.weather or 'CLEAR'
     self.hours = settings.hours or 08
     self.mins = settings.mins or 00
-    self.dynamic = settings.dynamic or true
+    self.dynamic = settings.dynamic ~= nil and settings.dynamic or true
     self.blackout = settings.blackout or false
     self.freeze = settings.freeze or false
     self.instanttime = settings.instanttime or false
