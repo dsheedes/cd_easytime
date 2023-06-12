@@ -1,31 +1,38 @@
 CreateThread(function()
     Wait(5000)
-    local function ToNumber(cd) return tonumber(cd) end
     local resource_name = GetCurrentResourceName()
     local current_version = GetResourceMetadata(resource_name, 'version', 0)
     local docs_link = 'https://docs.codesign.pro/free-scripts/easytime-time-and-weather-management#changelog'
     local download_link = 'https://keymaster.fivem.net/asset-grants'
     PerformHttpRequest('https://raw.githubusercontent.com/RampBST/Codesign_Versions_V2/master/'..resource_name..'.txt',function(error, result, headers)
-        if not result then print('^1Version check disabled because github is down.^0') return end
+        if not result then print('^1Version check disabled because github is having issues.^0') return end
         local result = json.decode(result:sub(1, -2))
-        if ToNumber(result.version:gsub('%.', '')) > ToNumber(current_version:gsub('%.', '')) then
-            local self = {}
-            self.current, self.new = {}, {}
-            for cd in current_version:gsub('%f[.]%.%f[^.]', '\0'):gmatch'%Z+' do 
-                self.current[#self.current+1] = cd
+        local function CompareVersions(new, current)
+            for cd = 1, #new do
+                local new_number = tonumber(new[cd])
+                local current_number = tonumber(current[cd])
+                if new_number > current_number then
+                    return true
+                elseif new_number < current_number then
+                    return false
+                end
             end
-            for cd in result.version:gsub('%f[.]%.%f[^.]', '\0'):gmatch'%Z+' do 
-                self.new[#self.new+1] = cd
-            end
-            
+            return false
+        end
+
+        local self = {}
+        self.current_table = {string.match(current_version, '(%d+)%.(%d+)%.(%d+)')}
+        self.new_table = {string.match(result.version, '(%d+)%.(%d+)%.(%d+)')}
+
+        if CompareVersions(self.new_table, self.current_table) then
             local current_version, new_version = '', ''
-            for c, d in pairs(self.current) do
-                if d == self.new[c] then
+            for c, d in ipairs(self.current_table) do
+                if d == self.new_table[c] then
                     current_version = current_version..'^5'..d..'.^0'
-                    new_version = new_version..'^5'..self.new[c]..'.^0'
+                    new_version = new_version..'^5'..self.new_table[c]..'.^0'
                 else
                     current_version = current_version..'^1'..d..'^5.^0'
-                    new_version = new_version..'^2'..self.new[c]..'^5.^0'
+                    new_version = new_version..'^2'..self.new_table[c]..'^5.^0'
                 end
             end
             current_version = current_version:sub(1, -4)
