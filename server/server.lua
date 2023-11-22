@@ -50,7 +50,7 @@ local resource_name = GetCurrentResourceName()
 local TsunamiCountdownStarted = false
 
 
-local function forceUpdate(data)
+function forceUpdate(data)
       if data.hours then
             self.mins = 00
             self.hours = data.hours
@@ -101,7 +101,6 @@ local function forceUpdate(data)
       end
       TriggerClientEvent('cd_easytime:ForceUpdate', -1, data)
 end
-
 
 RegisterCommand(Config.Command.OpenUI, function(source)
       local _source = source
