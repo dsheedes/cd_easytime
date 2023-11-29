@@ -62,7 +62,7 @@ end)
 RegisterServerEvent('cd_easytime:SyncMe')
 AddEventHandler('cd_easytime:SyncMe', function(instant)
     local _source = source
-    local temp = json.decode(json.encode(self))
+    local temp = self
     temp.instanttime = true
     temp.instantweather = true
     TriggerClientEvent('cd_easytime:ForceUpdate', _source, temp)
