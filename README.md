@@ -1,10 +1,8 @@
 # Easytime - FiveM Time and Weather
 
-![674x458](https://i.imgur.com/cHwhpau.png)
+![674x458](https://i.imgur.com/wLbjp3D.png)
 
-![674x458](https://i.imgur.com/PimVsrU.png)
-
-![674x458](https://i.imgur.com/9kUB0Z7.png)
+![674x458](https://i.imgur.com/wKThu2R.png)
 
 ![](https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png)
 
