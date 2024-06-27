@@ -144,6 +144,13 @@ body {
     --bs-btn-border-radius: var(--bs-border-radius-sm);
 }
 
+#input-info {
+    position: absolute;
+    right: 1rem;
+    top: -1.2rem;
+    cursor: pointer;
+}
+
 @-webkit-keyframes slide-in-bottom {
     0% {
         -webkit-transform: translateY(1000px);
