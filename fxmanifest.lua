@@ -40,5 +40,4 @@ server_exports {
       'forceUpdate'
 }
 
-provide 'qb-weathersync'
 provide 'vSync'
