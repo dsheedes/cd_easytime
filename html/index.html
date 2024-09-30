@@ -398,6 +398,57 @@
 							</label>
 						</div>
 					</div>
+					<div
+						id="new-weather"
+						class="row mb-2 text-light justify-content-between text-center"
+					>
+						<div
+							class="col-2"
+							data-toggle="tooltip"
+							data-placement="top"
+							title="Rain Halloween"
+							data-trigger="hover"
+						>
+							<label
+								class="form-check form-switch"
+								for="easytime-weather-rain-halloween"
+							>
+								<input
+									type="radio"
+									name="easytime-weather-selector"
+									class="form-check-input easytime-weather-setting"
+									id="easytime-weather-rain-halloween"
+									value="RAIN_HALLOWEEN"
+								/>
+								<span class="form-check-label"
+									><i class="wi wi-alien"></i><i class="wi wi-rain"></i
+								></span>
+							</label>
+						</div>
+						<div
+							class="col-2"
+							data-toggle="tooltip"
+							data-placement="top"
+							title="Snow Halloween"
+							data-trigger="hover"
+						>
+							<label
+								class="form-check form-switch"
+								for="easytime-weather-snow-halloween"
+							>
+								<input
+									type="radio"
+									name="easytime-weather-selector"
+									class="form-check-input easytime-weather-setting"
+									id="easytime-weather-snow-halloween"
+									value="SNOW_HALLOWEEN"
+								/>
+								<span class="form-check-label"
+									><i class="wi wi-alien"></i><i class="wi wi-snow"></i
+								></span>
+							</label>
+						</div>
+					</div>
 					<div class="row mt-2">
 						<div
 							class="col-12 mt-2 d-flex flex-wrap justify-content-between align-items-stretch"
@@ -524,14 +575,15 @@
 							</label>
 						</div>
 						<div
-							class="col-12 mt-2 d-flex flex-wrap justify-content-around align-content-center"
+							class="col-12 mt-2 d-flex flex-wrap justify-content-between align-content-center"
 						>
 							<label
+								id="realtime"
 								class="form-check form-switch"
 								for="easytime-realtime"
 								data-toggle="tooltip"
 								data-placement="top"
-								title="Use real time"
+								title="Pause or resume the real-time clock, allowing you to change it manually"
 								data-trigger="hover"
 							>
 								<input
@@ -544,11 +596,12 @@
 								>
 							</label>
 							<label
+								id="realweather"
 								class="form-check form-switch"
 								for="easytime-realweather"
 								data-toggle="tooltip"
 								data-placement="top"
-								title="Use real weather"
+								title="Pause or unpause the real weather, allowing you to change it manually"
 								data-trigger="hover"
 							>
 								<input
@@ -565,12 +618,12 @@
 				</div>
 				<div class="card-footer d-flex justify-content-between">
 					<p
-						id="realtime-location"
+						id="real-location"
 						class="fw-semibold p-0 m-0"
 						style="font-size: 80%"
 					>
-						London, GB<br />
-						<small class="text-muted fw-normal">Clouds, broken clouds</small>
+						<span id="real-city"></span><br />
+						<small id="real-weather" class="text-muted fw-normal"></small>
 					</p>
 					<div class="d-flex gap-1 align-items-center" role="group">
 						<button
