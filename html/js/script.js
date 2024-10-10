@@ -231,6 +231,39 @@ function updateTimeDisplay(hours, minutes) {
 
 	document.getElementById("easytime-menu-time").innerHTML = newTime;
 }
+function toggleWeatherChanging(state) {
+	document.getElementById("easytime-dynamic").disabled = state;
+	document.getElementById("easytime-dynamic").checked = false;
+	document
+		.querySelectorAll("[name='easytime-weather-selector']")
+		.forEach((element) => {
+			element.disabled = state;
+		});
+}
+function playSound() {
+	if (tsunamiSoundAvailable) {
+		// Check if the sound stopped playing
+
+		tsunamiSoundAvailable = false; // Set the avaliability to false, since we are going to play it now.
+		tsunamiSound.volume = 0.5; // Set the volume to 0.5 (or adjust to your own preference)
+
+		tsunamiSound.play().then(() => {
+			tsunamiSound.currentTime = 0; // Reset the position to start
+			tsunamiSoundAvailable = true; // Sound stopped playing, so it is now avaliable
+		});
+	}
+}
+function numToTime(number) {
+	var hour = Math.floor(number);
+	var decpart = number - hour;
+
+	var min = 1 / 60;
+	// decpart = min * Math.round(decpart / min);
+
+	var minute = Math.floor(decpart * 60);
+
+	return { hours: hour, minutes: minute };
+}
 document
 	.getElementById("easytime-range")
 	.addEventListener("input", function (e) {
@@ -294,7 +327,7 @@ window.addEventListener("message", function (event) {
 			values.realtime = true;
 		} else values.realtime = false;
 
-		if (setweather === "gameweather") {
+		if (defaultTime === "gameweather") {
 			document.getElementById("realweather").style.display = "none";
 		} else {
 			document.getElementById("real-city").innerHTML =
@@ -302,7 +335,7 @@ window.addEventListener("message", function (event) {
 			document.getElementById("real-weather").innerHTML =
 				values.real_info.weather + ", " + values.real_info.weather_description;
 		}
-		if (settime === "gametime") {
+		if (defaultWeather === "gametime") {
 			document.getElementById("realtime").style.display = "none";
 		} else {
 			document.getElementById("real-city").innerHTML =
@@ -324,9 +357,11 @@ window.addEventListener("message", function (event) {
 
 		originalMinutes = values.mins;
 
-		updateTimeDisplay(originalTime, originalMinutes);
+		updateTimeDisplay(originalHours, originalMinutes);
 
 		document.getElementById("easytime-dynamic").checked = values.dynamic;
+		document.getElementById("easytime-dynamic").disabled = values.realweather;
+
 		document.getElementById("easytime-blackout").checked = values.blackout;
 		document.getElementById("easytime-freeze").checked = values.freeze;
 		document.getElementById("easytime-instant-time").checked =
@@ -356,6 +391,11 @@ window.addEventListener("message", function (event) {
 		document.getElementById("easytime-card").classList.add("slide-out-bottom");
 
 		document.getElementById("easytime-card").offsetWidth;
+
+		// Clear all the tooltips in case they are staying on
+		document.querySelectorAll("[data-toggle='tooltip']").forEach((element) => {
+			bootstrap.Tooltip.getInstance(element).hide();
+		});
 	} else if (event.data.action == "playsound") {
 		playSound();
 	}
@@ -428,8 +468,6 @@ document
 document
 	.getElementById("easytime-button-change")
 	.addEventListener("click", function () {
-		window.postMessage({ action: "close" });
-
 		if (originalHours == values.hours && originalMinutes == values.mins) {
 			easyTimeChange(
 				{
@@ -479,36 +517,3 @@ window.addEventListener("keydown", (e) => {
 		closeUI();
 	}
 });
-
-function toggleWeatherChanging(state) {
-	document
-		.querySelectorAll("[name='easytime-weather-selector']")
-		.forEach((element) => {
-			element.disabled = state;
-		});
-}
-function playSound() {
-	if (tsunamiSoundAvailable) {
-		// Check if the sound stopped playing
-
-		tsunamiSoundAvailable = false; // Set the avaliability to false, since we are going to play it now.
-		tsunamiSound.volume = 0.5; // Set the volume to 0.5 (or adjust to your own preference)
-
-		tsunamiSound.play().then(() => {
-			tsunamiSound.currentTime = 0; // Reset the position to start
-			tsunamiSoundAvailable = true; // Sound stopped playing, so it is now avaliable
-		});
-	}
-}
-
-function numToTime(number) {
-	var hour = Math.floor(number);
-	var decpart = number - hour;
-
-	var min = 1 / 60;
-	// decpart = min * Math.round(decpart / min);
-
-	var minute = Math.floor(decpart * 60);
-
-	return { hours: hour, minutes: minute };
-}

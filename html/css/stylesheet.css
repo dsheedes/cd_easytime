@@ -181,12 +181,14 @@ body {
 
 @-webkit-keyframes slide-out-bottom {
     0% {
+        pointer-events: none;
         -webkit-transform: translateY(0);
         transform: translateY(0);
         opacity: 1;
     }
 
     100% {
+        pointer-events: all;
         -webkit-transform: translateY(1000px);
         transform: translateY(1000px);
         opacity: 0;
@@ -196,12 +198,14 @@ body {
 
 @keyframes slide-out-bottom {
     0% {
+        pointer-events: none;
         -webkit-transform: translateY(0);
         transform: translateY(0);
         opacity: 1;
     }
 
     100% {
+        pointer-events: all;
         -webkit-transform: translateY(1000px);
         transform: translateY(1000px);
         opacity: 0;
