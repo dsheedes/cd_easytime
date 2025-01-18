@@ -6,7 +6,7 @@
 --╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
 
 
-ESX, QBCore = nil, nil
+ESX, QBCore = "es_extended", nil
 
 Citizen.CreateThread(function()
     if Config.Framework == 'esx' then
