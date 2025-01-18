@@ -6,7 +6,7 @@
 --╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
 
 
-ESX = nil
+ESX = "es_extended"
 QBCore = nil
 vRP, vRPclient = nil, nil
 
