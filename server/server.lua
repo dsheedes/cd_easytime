@@ -1,105 +1,166 @@
---███████╗██████╗  █████╗ ███╗   ███╗███████╗██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗
---██╔════╝██╔══██╗██╔══██╗████╗ ████║██╔════╝██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝
---█████╗  ██████╔╝███████║██╔████╔██║█████╗  ██║ █╗ ██║██║   ██║██████╔╝█████╔╝ 
---██╔══╝  ██╔══██╗██╔══██║██║╚██╔╝██║██╔══╝  ██║███╗██║██║   ██║██╔══██╗██╔═██╗ 
---██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗╚███╔███╔╝╚██████╔╝██║  ██║██║  ██╗
---╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
+self = {}
+local resource_name = GetCurrentResourceName()
+local WeatherGroup = Config.Weather.GameWeather.WeatherGroups[1]
+local LastWeatherGroup = WeatherGroup
+local LastWeatherTable = {}
+local TimesChanged = 0
+local RealTimezone = 0
 
 
-ESX = nil
-QBCore = nil
-vRP, vRPclient = nil, nil
-
-if Config.Framework == 'esx' then
-    TriggerEvent(Config.FrameworkTriggers.main, function(obj) ESX = obj end)
-    if ESX == nil then
-        ESX = exports[Config.FrameworkTriggers.resource_name]:getSharedObject()
-    end
-
-elseif Config.Framework == 'qbcore' then
-    TriggerEvent(Config.FrameworkTriggers.main, function(obj) QBCore = obj end)
-    if QBCore == nil then
-        QBCore = exports[Config.FrameworkTriggers.resource_name]:GetCoreObject()
-    end
-
-elseif Config.Framework == 'vrp' then
-    local Proxy = module('vrp', 'lib/Proxy')
-    local Tunnel = module('vrp', 'lib/Tunnel')
-    vRP = Proxy.getInterface('vRP')
-    vRPclient = Tunnel.getInterface('vRP', 'chat_commands')
+if Config.Weather.METHOD ~= 'game' and Config.Weather.METHOD ~= 'real' then
+    print('^1Error: Invalid Config.Weather.METHOD - '..Config.Weather.METHOD..'.^0')
 end
 
+if Config.Time.METHOD ~= 'game' and Config.Time.METHOD ~= 'real' then
+    print('^1Error: Invalid Config.Time.METHOD - '..Config.Time.METHOD..'.^0')
+end
 
---███╗   ███╗ █████╗ ██╗███╗   ██╗
---████╗ ████║██╔══██╗██║████╗  ██║
---██╔████╔██║███████║██║██╔██╗ ██║
---██║╚██╔╝██║██╔══██║██║██║╚██╗██║
---██║ ╚═╝ ██║██║  ██║██║██║ ╚████║
---╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
+if (Config.Weather.METHOD == 'real' or Config.Time.METHOD == 'real') and Config.APIKey == 'CHANGE_ME' then
+    print('^1Error: Invalid Config.APIKey - '..Config.APIKey..'.^0')
+end
 
+if Config.Time.GameTime.time_cycle_speed < 1 or Config.Time.GameTime.time_cycle_speed > 10 then
+    print('^1Error: Invalid Config.Time.GameTime.time_cycle_speed - '..Config.Time.GameTime.time_cycle_speed..'.^0')
+end
 
-local self = {}
-local LastWeatherTable = {}
-local LastWeather = false
-local WeatherCounter = 0
-local TimesChanged = 0
-local HasTriggered = false
-local TimeCounter = 0
-local Group = Config.WeatherGroups[1]
-local LastGroup = Config.WeatherGroups[1]
-local resource_name = GetCurrentResourceName()
-local TsunamiCountdownStarted = false
-
-RegisterCommand(Config.Command.OpenUI, function(source)
-    local _source = source
-    if PermissionsCheck(_source) then
-        TriggerClientEvent('cd_easytime:OpenUI', _source, self)
-    else
-        Notification(_source, 3, L('invalid_permissions'))
-    end
-end)
-
-RegisterServerEvent('cd_easytime:SyncMe')
-AddEventHandler('cd_easytime:SyncMe', function(instant)
-    local _source = source
-    local temp = json.decode(json.encode(self))
-    temp.instanttime = true
-    temp.instantweather = true
-    TriggerClientEvent('cd_easytime:ForceUpdate', _source, temp)
-end)
-
-RegisterServerEvent('cd_easytime:ForceUpdate')
-AddEventHandler('cd_easytime:ForceUpdate', function(data)
-    local _source = source
-    if PermissionsCheck(_source) then
-        if data.hours then
-            self.mins = 00
-            self.hours = data.hours
+local function FoundWeatherGroup(group, weather)
+    for _, value in ipairs(group) do
+        if value == weather then
+            return true
         end
-        if data.weather and data.weather ~= self.weather then
-            self.weather = data.weather
-            local shouldstop = false
-            TimesChanged = 0
-            LastWeatherTable = nil
-            LastWeatherTable = {}
-            for c_1, d_1 in pairs(Config.WeatherGroups) do
-                if shouldstop then
-                    break
-                end
-                for c_2, d_2 in pairs(d_1) do
-                    if d_2 == self.weather then
-                        shouldstop = true
-                        Group = d_1
+    end
+    return false
+end
+
+local function GetRealTime()
+    local dt = os.time()+RealTimezone
+    return os.date("!*t", dt).hour, os.date("!*t", dt).min
+end
+
+function GetRealWorldData(city)
+    local data = {}
+    PerformHttpRequest('https://api.openweathermap.org/data/2.5/weather?q='..city..'&appid='..Config.APIKey..'&units=metric', function(error, result, header)
+        if error == 200 then
+            local result = json.decode(result)
+            for c, d in pairs(Config.Weather.RealWeather.weather_types) do
+                for cd = 1, #d do
+                    if d[cd] == result.weather[1].id then
+                        data.weather = c
+                        data.info = {
+                            weather = result.weather[1].main,
+                            weather_description = result.weather[1].description,
+                            country = result.sys.country,
+                            city = result.name,
+                        }
                         break
                     end
                 end
             end
-            for c_3, d_3 in pairs(Group) do
-                if d_3 == self.weather then
+            RealTimezone = result.timezone
+            data.hours, data.mins = GetRealTime()            
+        else
+            print('^1Error: Invalid City Name or API Key.^0')
+        end
+    end,'GET','',{["Content-Type"]='application/json'})
+    local timeout = 0 while not data.weather and timeout <= 100 do Wait(0) timeout=timeout+1  end
+    return data
+end
+
+CreateThread(function()
+    if Config.Weather.METHOD =='real' and Config.Time.METHOD == 'real' then
+        local real_world_data = GetRealWorldData(Config.Weather.RealWeather.city)
+        self.real_info = real_world_data.info
+        self.weather = real_world_data.weather or 'CLEAR'
+        self.hours = real_world_data.hours or 08
+        self.mins = real_world_data.mins or 00
+        self.dynamic = false
+        self.freeze = false
+        self.instantweather = false
+        self.instanttime = false
+
+    elseif Config.Weather.METHOD =='real' then
+        local real_world_data = GetRealWorldData(Config.Weather.RealWeather.city)
+        self.real_info = real_world_data.info
+        self.weather = real_world_data.weather or 'CLEAR'
+        self.dynamic = false
+        self.instantweather = false
+
+    elseif Config.Time.METHOD == 'real' then
+        local real_world_data = GetRealWorldData(Config.Time.RealTime.city)
+        self.real_info = real_world_data.info
+        self.hours = real_world_data.hours or 08
+        self.mins = real_world_data.mins or 00
+        self.freeze = false
+        self.instanttime = false
+    end
+
+    self.weathermethod = Config.Weather.METHOD
+    self.timemethod = Config.Time.METHOD
+
+    local settings = json.decode(LoadResourceFile(resource_name,'./settings.txt'))
+    if self.weather == nil then self.weather = settings.weather or 'CLEAR' end
+    if self.hours == nil then self.hours = settings.hours or 08 end
+    if self.mins == nil then self.mins = settings.mins or 00 end
+    if self.dynamic == nil then self.dynamic = settings.dynamic == true and true or false end
+    if self.freeze == nil then self.freeze = settings.freeze == true and true or false end
+    if self.instanttime == nil then self.instanttime = settings.instanttime == true and true or false end
+    if self.instantweather == nil then self.instantweather = settings.instantweather == true and true or false end
+    self.blackout = settings.blackout == true and true or false
+    self.tsunami = false
+
+    print('^3['..resource_name..'] - Settings Applied.^0')
+    if Config.Framework ~= 'aceperms' or Config.Framework ~= 'identifiers' then
+        Wait(2000)
+        local temp = json.decode(json.encode(self))
+        temp.instanttime = true
+        temp.instantweather = true
+        TriggerClientEvent('cd_easytime:ForceUpdate', -1, temp)
+    end
+end)
+
+RegisterServerEvent('cd_easytime:SyncMe', function(instant)
+    local source = source
+    local temp = json.decode(json.encode(self))
+    temp.instanttime = true
+    temp.instantweather = true
+    TriggerClientEvent('cd_easytime:ForceUpdate', source, temp)
+end)
+
+RegisterServerEvent('cd_easytime:SyncMe_basics', function(data)
+    local source = source
+    if data.weather then
+        TriggerClientEvent('cd_easytime:SyncWeather', source, {weather = self.weather, instantweather = true})
+    end
+    if data.time then
+        TriggerClientEvent('cd_easytime:SyncTime', source, {hours = self.hours, mins = self.mins})
+    end
+end)
+
+RegisterServerEvent('cd_easytime:ForceUpdate', function(data)
+    local source = source
+    if PermissionsCheck(source) then
+        if data.hours then
+            self.hours = data.hours
+            self.mins = data.mins
+        end
+        if data.weather and data.weather ~= self.weather then
+            self.weather = data.weather
+            TimesChanged = 0
+            LastWeatherTable = {}
+        
+            for _, weather_group in pairs(Config.Weather.GameWeather.WeatherGroups) do
+                if FoundWeatherGroup(weather_group, self.weather) then
+                    WeatherGroup = weather_group
                     break
                 end
-                TimesChanged = TimesChanged+1
-                LastWeatherTable[d_3] = d_3
+            end
+        
+            for _, weather_type in ipairs(WeatherGroup) do
+                if weather_type == self.weather then
+                    break
+                end
+                LastWeatherTable[weather_type] = true
+                TimesChanged = TimesChanged + 1
             end
         end
         if data.dynamic ~= nil then
@@ -110,6 +171,8 @@ AddEventHandler('cd_easytime:ForceUpdate', function(data)
         end
         if data.freeze ~= nil then
             self.freeze = data.freeze
+            data.hours = self.hours
+            data.mins = self.mins
         end
         if data.instanttime ~= nil then
             self.instanttime = data.instanttime
@@ -117,148 +180,241 @@ AddEventHandler('cd_easytime:ForceUpdate', function(data)
         if data.instantweather ~= nil then
             self.instantweather = data.instantweather
         end
-        if data.tsunami ~= nil and Config.TsunamiWarning then
+        if data.tsunami ~= nil and Config.TsunamiWarning.ENABLE then
             self.tsunami = data.tsunami
         end
-        TriggerClientEvent('cd_easytime:ForceUpdate', -1, data)
+        if data.weathermethod ~= nil and data.weathermethod ~= self.weathermethod then
+            self.weathermethod = data.weathermethod
+            WewatherMethodChange(data.weathermethod)
+        end
+        if data.timemethod ~= nil and data.timemethod ~= self.timemethod then
+            self.timemethod = data.timemethod
+            TimeMethodChange(data.timemethod)
+        end
+        TriggerClientEvent('cd_easytime:ForceUpdate', -1, data, source)
     else
-        DropPlayer(_source, L('drop_player'))
+        DropPlayer(source, L('drop_player'))
     end
 end)
 
-local function LoadSettings()
-    local settings = json.decode(LoadResourceFile(resource_name,'./settings.txt'))
-    self.weather = settings.weather or 'CLEAR'
-    self.hours = settings.hours or 08
-    self.mins = settings.mins or 00
-    self.dynamic = settings.dynamic == true and true or false
-    self.blackout = settings.blackout == true and true or false
-    self.freeze = settings.freeze == true and true or false
-    self.instanttime = settings.instanttime == true and true or false
-    self.instantweather = settings.instantweather == true and true or false
-    self.tsunami = false
-    print('^3['..resource_name..'] - Saved settings applied.^0')
-    if Config.Framework ~= 'vrp' or Config.Framework ~= 'aceperms' then
-        Wait(2000)
-        local temp = json.decode(json.encode(self))
-        temp.instanttime = true
-        temp.instantweather = true
-        TriggerClientEvent('cd_easytime:ForceUpdate', -1, temp)
+local function RealWeatherChange()
+    local real_world_data = GetRealWorldData(Config.Time.RealTime.city)
+    self.real_info = real_world_data.info
+    if real_world_data.weather ~= self.weather then
+        self.weather = real_world_data.weather
+        TriggerClientEvent('cd_easytime:SyncWeather', -1, {weather = self.weather, instantweather = false})
+        if Config.ConsolePrints then
+            print('^3['..resource_name..'] - Weather changed to '..self.weather..'^0')
+        end
     end
 end
 
-Citizen.CreateThread(function()
-    LoadSettings()
+local function GameWeatherChange()
+    if TimesChanged >= #WeatherGroup then
+        WeatherGroup = ChooseWeatherType()
+        TimesChanged = 0
+        LastWeatherTable = {}
+        LastWeatherGroup = WeatherGroup
+    end
+
+    for _, new_weather in ipairs(WeatherGroup) do
+        if not LastWeatherTable[new_weather] then
+            if new_weather == 'THUNDER' and math.random(1, 100) > Config.Weather.GameWeather.thunder_chance then
+                LastWeatherTable[new_weather] = true
+                TimesChanged = TimesChanged + 1
+                break
+            end
+
+            self.weather = new_weather
+            LastWeatherTable[new_weather] = true
+            TimesChanged = TimesChanged + 1
+
+            TriggerClientEvent('cd_easytime:SyncWeather', -1, {weather = self.weather,instantweather = self.instantweather})
+
+            if Config.ConsolePrints then
+                print('^3Weather changed to '..self.weather..'.^0')
+            end
+
+            break
+        end
+    end
+end
+
+function WewatherMethodChange(new_weather_method)
+    if new_weather_method == 'real' then
+        self.weathermethod = 'real'
+        self.dynamic = false
+        self.instantweather = false
+        RealWeatherChange()
+
+    elseif new_weather_method == 'game' then
+        self.weathermethod = 'game'
+        GameWeatherChange()
+    end
+    TriggerClientEvent('cd_easytime:WeatherMethodChange', -1, new_weather_method)
+end
+
+CreateThread(function()
+    Wait(1000)
     while true do
-        Citizen.Wait(Config.TimeCycleSpeed*1000)
-        if not self.freeze then
-            TimeCounter = TimeCounter+1
-            self.mins = self.mins+1
-            if self.mins >= 60 then self.mins = 0 self.hours = self.hours+1 end
-            if self.hours >= 24 then self.hours = 0 end
-
-            if TimeCounter == 5 then
-                HasTriggered = false
-            end
-            if not HasTriggered then
-                HasTriggered = true
-                TimeCounter = 0
-                TriggerClientEvent('cd_easytime:SyncTime', -1, {hours = self.hours, mins = self.mins})
-            end
-        end
-
-        if self.dynamic and not shouldstop then
-            WeatherCounter = WeatherCounter+1
-            if WeatherCounter >= ((Config.DynamicWeather_time*60*1000)/(Config.TimeCycleSpeed*1000)) then
-                WeatherCounter = 0
-                if #Group >= TimesChanged then
-                    local TableCleared = true
-                    for _, d in pairs(Group) do
-                        if LastWeatherTable[d] == nil then
-                            if d == 'THUNDER' and math.random(1,100) > Config.ThunderChance then
-                                break
-                            end
-                            TimesChanged = TimesChanged+1
-                            LastWeatherTable[d] = d
-                            self.weather = d
-                            TriggerClientEvent('cd_easytime:SyncWeather', -1, {weather = self.weather, instantweather = self.instantweather})
-                            print('^3['..resource_name..'] - Weather changed to '..self.weather..'^0')
-                            TableCleared = false
-                            break
-                        end
-                    end
-                    Wait(0)
-                    if TableCleared then
-                        Group = ChooseWeatherType()
-                        TimesChanged = 0
-                        LastWeatherTable = nil
-                        LastWeatherTable = {}
-                    end 
-                    LastGroup = Group
-                end
-            end
+        if self.weathermethod =='real' then
+            RealWeatherChange()
+            Wait(Config.Weather.RealWeather.weather_check*60*1000)
+        else
+            Wait(1000)
         end
     end
 end)
-     
-function ChooseWeatherType()
-    local result = math.random(1,#Config.WeatherGroups)
-    if result == 2 then
-        if math.random(1,100) <= Config.RainChance then
-            return Config.WeatherGroups[result]
-        else
-            local StartLoop = true
-            while StartLoop do
-                Wait(0)
-                local finalaresult = math.random(1,#Config.WeatherGroups)
-                if finalaresult ~= result and finalaresult ~= 4 then
-                    StartLoop = false
-                    return Config.WeatherGroups[finalaresult]
-                end
-            end
-        end
-    elseif result == 3 then
-        if LastGroup == Config.WeatherGroups[result] then
-            return Config.WeatherGroups[1]
-        else
-            return Config.WeatherGroups[result]
-        end
-    elseif result == 4 then
-        if math.random(1,100) <= Config.SnowChance then
-            return Config.WeatherGroups[result]
-        else
-            local StartLoop = true
-            while StartLoop do
-                Wait(0)
-                local finalaresult = math.random(1,#Config.WeatherGroups)
-                if finalaresult ~= result and finalaresult ~= 2 then
-                    StartLoop = false
-                    return Config.WeatherGroups[finalaresult]
-                end
-            end
-        end
-    else
-        return Config.WeatherGroups[result]
-    end 
-end
 
-RegisterServerEvent('cd_easytime:ToggleInstantChange:Time')
-AddEventHandler('cd_easytime:ToggleInstantChange:Time', function(boolean)
-    self.instanttime = boolean
+CreateThread(function()
+    Wait(1000)
+    while true do
+        if self.weathermethod =='game' and self.dynamic then
+            GameWeatherChange()
+            Wait(Config.Weather.GameWeather.dynamic_weather_time*60*1000)
+        else
+            Wait(1000)
+        end
+    end
 end)
 
-RegisterServerEvent('cd_easytime:ToggleInstantChange:Weather')
-AddEventHandler('cd_easytime:ToggleInstantChange:Weather', function(boolean)
-    self.instantweather = boolean
+
+
+local function RealTimeChange()
+    self.hours, self.mins = GetRealTime()
+    TriggerClientEvent('cd_easytime:SyncTime', -1, {hours = self.hours, mins = self.mins})
+end
+
+function GameTimeChange(time)
+    self.mins = self.mins + time
+    
+    if self.mins >= 60 then
+        self.mins = self.mins % 60
+        self.hours = self.hours + math.floor(self.mins / 60)
+        
+        if self.hours >= 24 then
+            self.hours = self.hours % 24
+        end
+    end
+end
+
+function TimeMethodChange(new_time_method)
+    if new_time_method == 'real' then
+        self.timemethod = new_time_method
+        self.freeze = false
+        self.instanttime = false
+        RealTimeChange()
+        
+    elseif new_time_method == 'game' then
+        self.timemethod = new_time_method
+        TriggerClientEvent('cd_easytime:SyncTime', -1, {hours = self.hours, mins = self.mins})
+    end
+    TriggerClientEvent('cd_easytime:TimeMethodChange', -1, new_time_method)
+end
+
+RegisterServerEvent('cd_easytime:SetNewGameTime', function(time)
+    self.hours = time.hours
+    self.mins = time.mins
+end)
+
+CreateThread(function()
+    Wait(1000)
+    while true do
+        if self.timemethod == 'real' then
+            local secs = os.date("!*t", os.time() + RealTimezone).sec
+            local wait_timer = (60 - secs) * 1000
+            if wait_timer == 0 then
+                wait_timer = 60000
+            end
+            RealTimeChange()
+            Wait(wait_timer)            
+        else
+            Wait(1000)
+        end
+    end
+end)
+
+CreateThread(function()
+    Wait(1000)
+    local wait_timer = Config.Time.GameTime.time_cycle_speed * 1000
+    while true do
+        if self.timemethod == 'game' and not self.freeze then            
+            GameTimeChange(1)  
+            Wait(wait_timer)
+        else
+            Wait(1000)
+        end
+    end
+end)
+
+
+
+
+
+function ChooseWeatherType()
+    math.randomseed(GetGameTimer())
+    local WeatherGroups = Config.Weather.GameWeather.WeatherGroups
+
+    local function getRandomGroup(excluded_groups)
+        local available_groups = {}
+        for index, group in ipairs(WeatherGroups) do
+            if not excluded_groups[group] then
+                available_groups[#available_groups] = {index = index, group = group}
+            end
+        end
+        if #available_groups == 0 then
+            return 1
+        else
+            local selection = available_groups[math.random(1, #available_groups)]
+            return selection.index
+        end
+    end
+
+    local result = math.random(1, #WeatherGroups)
+
+    if result == 2 then
+        if math.random(1, 100) <= Config.Weather.GameWeather.rain_chance then
+            return WeatherGroups[result]
+        else
+            result = getRandomGroup({[WeatherGroups[result]] = true})
+            return WeatherGroups[result]
+        end
+        
+    elseif result == 3 then
+        if math.random(1, 100) <= Config.Weather.GameWeather.fog_chance then
+            return WeatherGroups[result]
+        else
+            result = getRandomGroup({[WeatherGroups[result]] = true})
+            return WeatherGroups[result]
+        end
+
+    elseif result == 4 then
+        if math.random(1, 100) <= Config.Weather.GameWeather.snow_chance then
+            return WeatherGroups[result]
+        else
+            result = getRandomGroup({[WeatherGroups[result]] = true})
+            return WeatherGroups[result]
+        end
+    else
+        return WeatherGroups[result]
+    end
+end
+
+
+RegisterServerEvent('cd_easytime:ToggleInstantChange', function(action, boolean)
+    if action == 'time' then
+        self.instanttime = boolean
+    elseif action == 'weather' then
+        self.instantweather = boolean
+    end
 end)
 
 local function SaveSettngs()
     SaveResourceFile(resource_name,'settings.txt', json.encode(self), -1)
-    print('^3['..resource_name..'] - Settings Saved^0')
+    print('^3['..resource_name..'] - Settings Saved.^0')
 end
 
-RegisterServerEvent('cd_easytime:SaveSettings')
-AddEventHandler('cd_easytime:SaveSettings', function()
+RegisterServerEvent('cd_easytime:SaveSettings', function()
     SaveSettngs()
 end)
 
@@ -269,78 +425,16 @@ AddEventHandler('onResourceStop', function(resource)
 end)
 
 AddEventHandler('txAdmin:events:scheduledRestart', function(eventData)
-    if eventData.secondsRemaining == math.ceil(Config.TsunamiWarning_time*60) then
+    if eventData.secondsRemaining == math.ceil(Config.TsunamiWarning.time*60) then
         SaveSettngs()
-        if not Config.TsunamiWarning then return end
+        if not Config.TsunamiWarning.ENABLE then return end
         self.tsunami = true
         TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, true)
     end
 end)
 
-RegisterServerEvent('cd_easytime:StartTsunamiCountdown')
-AddEventHandler('cd_easytime:StartTsunamiCountdown', function(boolean)
-    if not Config.TsunamiWarning then return end
+RegisterServerEvent('cd_easytime:StartTsunamiCountdown', function(boolean)
+    if not Config.TsunamiWarning.ENABLE then return end
     self.tsunami = boolean
     TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, boolean)
 end)
-
-function PermissionsCheck(source)
-    if Config.Framework == 'esx' then 
-        local xPlayer = ESX.GetPlayerFromId(source)
-        local perms = xPlayer.getGroup()
-        for c, d in ipairs(Config.Command.Perms[Config.Framework]) do
-            if perms == d then
-                return true
-            end
-        end
-        return false
-    
-    elseif Config.Framework == 'qbcore' then
-        local perms = QBCore.Functions.GetPermission(source)
-        for c, d in ipairs(Config.Command.Perms[Config.Framework]) do
-            if type(perms) == 'string' then
-                if perms == d then
-                    return true
-                end
-            elseif type(perms) == 'table' then
-                if perms[d] then
-                    return true
-                end
-            end
-        end
-        return false
-
-    elseif Config.Framework == 'vrp' then
-        for c, d in pairs(Config.Command.Perms[Config.Framework]) do
-            if vRP.hasPermission({vRP.getUserId({source}), d}) then 
-                return true
-            end
-        end
-        return false
-
-    elseif Config.Framework == 'aceperms' then
-        if IsPlayerAceAllowed(source, 'command.'..Config.Command.OpenUI) then
-            return true
-        end
-        return false
-
-    elseif Config.Framework == 'identifiers' then
-        for c, d in ipairs(Config.Command.Perms[Config.Framework]) do
-            for cc, dd in ipairs(GetPlayerIdentifiers(source)) do
-                if string.lower(dd) == string.lower(d) then
-                return true
-            end
-        end
-    end
-    return false
-
-    elseif Config.Framework == 'other' then
-        --Add your own permissions check here (boolean).
-        return true
-        
-    end
-end
-
-function GetWeather()
-    return self
-end
