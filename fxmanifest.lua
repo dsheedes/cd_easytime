@@ -2,15 +2,21 @@ fx_version 'cerulean'
 game 'gta5'
 author 'discord.gg/codesign'
 description 'Codesign Weather & Time Managment'
-version '1.3.7'
+version '2.0.0'
 lua54 'yes'
 
 shared_scripts {
     'configs/locales.lua',
-    'configs/config.lua'
+    'configs/config.lua',
+    --'@ox_lib/init.lua', --⚠️PLEASE READ⚠️; Uncomment this line if you use 'ox_lib'.⚠️
+    --'@qbx_core/modules/lib.lua', --⚠️PLEASE READ⚠️; Uncomment this line if you use 'qbx_core'.⚠️
 }
 
-client_script 'client/client.lua'
+client_scripts {
+    'configs/client_customise_me.lua',
+    'client/*.lua',
+    --'@qbx_core/modules/playerdata.lua', --⚠️PLEASE READ⚠️; Uncomment this line if you use 'qbx_core'.⚠️
+}
 
 server_scripts {
     'configs/server_customise_me.lua',
@@ -32,12 +38,17 @@ files {
 }
 
 exports {
-    'GetWeather'
+    'GetWeather',
+    'GetAllData',
+    'GetPauseSyncState'
 }
 
 server_exports {
-    'GetWeather'
+    'GetWeather',
+    'GetAllData',
+    'GetRealData'
 }
 
-provide 'qb-weathersync'
 provide 'vSync'
+provide 'qb-weathersync'
+provide 'qbx_weathersync'

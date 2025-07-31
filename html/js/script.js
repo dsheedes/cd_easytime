@@ -5,9 +5,7 @@ let settings = {
 let originalHours = 8;
 let originalMinutes = 0;
 
-// Settings on boot
-let defaultTime = null;
-let defaultWeather = null;
+let weatherOnOpen = "";
 
 let values = {
 	hours: 8,
@@ -22,8 +20,10 @@ let values = {
 	realtime: false,
 	realweather: false,
 	game_build: 0,
-	weathermethod: "realweather", // gameweather realweather,
-	timemethod: "realtime", // gametime realtime
+	weathermethod: "game", // game real,
+	timemethod: "game", // game real
+	original_weathermethod: "game",
+	original_timemethod: "game",
 	real_info: {
 		weather: "",
 		weather_description: "",
@@ -233,7 +233,6 @@ function updateTimeDisplay(hours, minutes) {
 }
 function toggleWeatherChanging(state) {
 	document.getElementById("easytime-dynamic").disabled = state;
-	document.getElementById("easytime-dynamic").checked = false;
 	document
 		.querySelectorAll("[name='easytime-weather-selector']")
 		.forEach((element) => {
@@ -315,29 +314,28 @@ window.addEventListener("message", function (event) {
 			document.getElementById("new-weather").style.display = "none";
 		}
 
-		if (defaultWeather === null) defaultWeather = values.weathermethod;
+		weatherOnOpen = values.weather;
 
-		if (defaultTime === null) defaultTime = values.timemethod;
-
-		if (values.weathermethod === "realweather") {
+		if (values.weathermethod === "real") {
 			values.realweather = true;
 		} else values.realweather = false;
 
-		if (values.timemethod === "realtime") {
+		if (values.timemethod === "real") {
 			values.realtime = true;
 		} else values.realtime = false;
+	
 
-		if (defaultTime === "gameweather") {
+		if (values.original_weathermethod === "game") {
 			document.getElementById("realweather").style.display = "none";
-		} else {
+		} else if(values.real_info){
 			document.getElementById("real-city").innerHTML =
 				values.real_info.city + ", " + values.real_info.country;
 			document.getElementById("real-weather").innerHTML =
 				values.real_info.weather + ", " + values.real_info.weather_description;
 		}
-		if (defaultWeather === "gametime") {
+		if (values.original_timemethod === "game") {
 			document.getElementById("realtime").style.display = "none";
-		} else {
+		} else if(values.real_info){
 			document.getElementById("real-city").innerHTML =
 				values.real_info.city + ", " + values.real_info.country;
 		}
@@ -363,17 +361,20 @@ window.addEventListener("message", function (event) {
 		document.getElementById("easytime-dynamic").disabled = values.realweather;
 
 		document.getElementById("easytime-blackout").checked = values.blackout;
+		
 		document.getElementById("easytime-freeze").checked = values.freeze;
-		document.getElementById("easytime-instant-time").checked =
-			values.instanttime;
-		document.getElementById("easytime-instant-weather").checked =
-			values.instantweather;
+		document.getElementById("easytime-freeze").disabled = values.realtime;
+
+		document.getElementById("easytime-instant-time").checked = values.instanttime;
+		document.getElementById("easytime-instant-time").disabled = values.realtime;
+
+		document.getElementById("easytime-instant-weather").checked = values.instantweather;
+		document.getElementById("easytime-instant-weather").disabled = values.realweather;
+
 		document.getElementById("easytime-tsunami").checked = values.tsunami;
 		document.getElementById("easytime-realtime").checked = values.realtime;
 		document.getElementById("easytime-range").disabled = values.realtime;
-		document.getElementById("easytime-freeze").disabled = values.realtime;
-		document.getElementById("easytime-realweather").checked =
-			values.realweather;
+		document.getElementById("easytime-realweather").checked = values.realweather;
 		toggleWeatherChanging(values.realweather);
 
 		this.document.getElementById("easytime-range").value =
@@ -448,18 +449,27 @@ document
 	.getElementById("easytime-realtime")
 	.addEventListener("click", function () {
 		values.realtime = !values.realtime;
-		values.timemethod = values.realtime ? "realtime" : "gametime";
+		values.timemethod = values.realtime ? "real" : "game";
 		// disable all other radio buttons
 		document.getElementById("easytime-range").disabled = values.realtime;
 		document.getElementById("easytime-freeze").disabled = values.realtime;
+		document.getElementById("easytime-instant-time").disabled = values.realtime;
 	});
 
 document
 	.getElementById("easytime-realweather")
 	.addEventListener("click", function () {
 		values.realweather = !values.realweather;
-		values.weathermethod = values.realweather ? "realweather" : "gameweather";
+		values.weathermethod = values.realweather ? "real" : "game";
 		toggleWeatherChanging(values.realweather);
+		// disable all other radio buttons
+		document.getElementById("easytime-dynamic").disabled = values.realweather;
+		document.getElementById("easytime-instant-weather").disabled = values.realweather;
+
+		if(values.realweather && weatherOnOpen !== values.weather){
+			document.getElementById("easytime-weather-" + weatherOnOpen.toLowerCase()).checked = true;
+			document.getElementById("easytime-weather-" + values.weather.toLowerCase()).checked = false;
+		}
 	});
 document
 	.getElementById("easytime-button-close")
@@ -482,8 +492,8 @@ document
 					tsunami: values.tsunami,
 					realtime: values.realtime,
 					realweather: values.realweather,
-					weathermethod: values.realweather ? "realweather" : "gameweather",
-					timemethod: values.realtime ? "realtime" : "gametime",
+					weathermethod: values.realweather ? "real" : "game",
+					timemethod: values.realtime ? "real" : "game",
 				},
 				false
 			);
@@ -505,8 +515,8 @@ document
 					tsunami: values.tsunami,
 					realtime: values.realtime,
 					realweather: values.realweather,
-					weathermethod: values.realweather ? "realweather" : "gameweather",
-					timemethod: values.realtime ? "realtime" : "gametime",
+					weathermethod: values.realweather ? "real" : "game",
+					timemethod: values.realtime ? "real" : "game",
 				},
 				true
 			);

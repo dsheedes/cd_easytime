@@ -1,1 +1,1 @@
-{"hours":8,"weather":"EXTRASUNNY","mins":0,"instantweather":true,"dynamic":true,"freeze":false,"instanttime":true,"blackout":false}
+{"blackout":false,"mins":26,"real_info":{"weather_description":"overcast clouds","country":"GB","city":"London","weather":"Clouds"},"tsunami":false,"timemethod":"real","weather":"OVERCAST","instanttime":false,"weathermethod":"real","hours":21,"dynamic":false,"freeze":false,"instantweather":false}
