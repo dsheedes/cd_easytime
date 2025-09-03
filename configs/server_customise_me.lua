@@ -117,10 +117,12 @@ RegisterCommand(Config.Command, function(source)
     local source = source
     if PermissionsCheck(source) then
         TriggerClientEvent('cd_easytime:OpenUI', source, self)
+        print('Time:'.. self.hours..':'..self.mins .. ' Weather:' .. self.weather)
+
     else
         Notification(source, 3, L('invalid_permissions'))
     end
-end)
+end, false)
 
 RegisterServerEvent('cd_easytime:OpenUI', function(_source)
     local source = source

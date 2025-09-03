@@ -34,7 +34,6 @@ RegisterNetEvent('cd_easytime:PauseSync', function(boolean, hours)
 end)
 
 RegisterNetEvent('cd_easytime:ForceUpdate', function(data, source)
-    print(data.instanttime, data.instantweather)
     if not PauseSync.state then
         if data.weather ~= nil and data.weather ~= self.weather then
             CheckSnowSync(data.weather)

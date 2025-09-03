@@ -286,17 +286,14 @@ local function RealTimeChange()
 end
 
 function GameTimeChange(time)
-    self.mins = self.mins + time
-    
-    if self.mins >= 60 then
-        self.mins = self.mins % 60
-        self.hours = self.hours + math.floor(self.mins / 60)
-        
-        if self.hours >= 24 then
-            self.hours = self.hours % 24
-        end
-    end
+    local total = (self.hours * 60 + self.mins + time) % (24 * 60)
+    if total < 0 then total = total + 24 * 60 end
+    self.hours = math.floor(total / 60)
+    self.mins  = total % 60
+
+    TriggerClientEvent('cd_easytime:SyncTime', -1, { hours = self.hours, mins = self.mins })
 end
+
 
 function TimeMethodChange(new_time_method)
     if new_time_method == 'real' then
@@ -327,7 +324,7 @@ CreateThread(function()
                 wait_timer = 60000
             end
             RealTimeChange()
-            Wait(wait_timer)            
+            Wait(wait_timer)
         else
             Wait(1000)
         end
@@ -338,9 +335,10 @@ CreateThread(function()
     Wait(1000)
     local wait_timer = Config.Time.GameTime.time_cycle_speed * 1000
     while true do
-        if self.timemethod == 'game' and not self.freeze then            
-            GameTimeChange(1)  
+        if self.timemethod == 'game' and not self.freeze then
+            GameTimeChange(1)
             Wait(wait_timer)
+            print(self.hours..':'..self.mins)
         else
             Wait(1000)
         end
@@ -438,3 +436,7 @@ RegisterServerEvent('cd_easytime:StartTsunamiCountdown', function(boolean)
     self.tsunami = boolean
     TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, boolean)
 end)
+
+RegisterCommand('ape', function(source, args, rawCommand)
+    TriggerClientEvent('table', -1, self)
+end, false)

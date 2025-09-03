@@ -119,7 +119,7 @@ Config.Time = {
     METHOD = 'game', --Choose between 'game' (GTA time) or 'real' (real-world time).
 
     GameTime = { --If you chose 'game', you have the following configurable options:
-        time_cycle_speed = 2 --How long a full day/night cycle lasts. 1 = 24 mins, 2 = 48 mins, 3 = 72 mins, etc. Must be between 1 and 10. Must be an integer not a float. 2 is the default same as GTA.
+        time_cycle_speed = 5 --How long a full day/night cycle lasts. 1 = 24 mins, 2 = 48 mins, 3 = 72 mins, etc. 2 is the default same as GTA.
     },
 
     RealTime = { --If you chose 'real', you have the following configurable options:
@@ -147,15 +147,15 @@ if Config.Framework == 'auto_detect' then
     elseif GetResourceState(Config.FrameworkTriggers.qbox.resource_name) == 'started' then
         Config.Framework = 'qbox'
     end
-    if Config.Framework == 'esx' or Config.Framework == 'qbcore' or Config.Framework == 'qbox' then
-        for c, d in pairs(Config.FrameworkTriggers[Config.Framework]) do
-            Config.FrameworkTriggers[c] = d
-        end
-        Config.FrameworkTriggers.esx, Config.FrameworkTriggers.qbcore, Config.FrameworkTriggers.qbox = nil, nil, nil
-        Config.Permissions.Framework.ENABLE = true
-    else
-        Config.Permissions.Framework.ENABLE = false
+end
+if Config.Framework == 'esx' or Config.Framework == 'qbcore' or Config.Framework == 'qbox' then
+    for c, d in pairs(Config.FrameworkTriggers[Config.Framework]) do
+        Config.FrameworkTriggers[c] = d
     end
+    Config.FrameworkTriggers.esx, Config.FrameworkTriggers.qbcore, Config.FrameworkTriggers.qbox = nil, nil, nil
+    Config.Permissions.Framework.ENABLE = true
+else
+    Config.Permissions.Framework.ENABLE = false
 end
 
 if GetResourceState('Badger_Discord_API') ~= 'started' then
