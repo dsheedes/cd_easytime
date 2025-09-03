@@ -1,7 +1,8 @@
 self = {}
 local NUI_status = false
 local original_time = {}
-local pause_realtime = false
+local time_transition = false
+local forcedInstantTimeUpdate = false
 local my_source = GetPlayerServerId(PlayerId())
 PauseSync = {}
 PauseSync.state = false
@@ -33,6 +34,7 @@ RegisterNetEvent('cd_easytime:PauseSync', function(boolean, hours)
 end)
 
 RegisterNetEvent('cd_easytime:ForceUpdate', function(data, source)
+    print(data.instanttime, data.instantweather)
     if not PauseSync.state then
         if data.weather ~= nil and data.weather ~= self.weather then
             CheckSnowSync(data.weather)
@@ -42,19 +44,21 @@ RegisterNetEvent('cd_easytime:ForceUpdate', function(data, source)
         
         if (data.hours ~= nil and data.hours ~= self.hours) or (data.mins ~= nil and data.mins ~= self.mins) then
             if not data.instanttime then
-                SmoothChangeTime(data, CalculateTransitionSpeed(data.hours, data.mins))
+                SmoothChangeTime(data, 1)
                 self.hours = data.hours
                 self.mins = data.mins
                 if source == my_source then
                     TriggerServerEvent('cd_easytime:SetNewGameTime', {hours = data.hours, mins = data.mins})
                 end
             else
+                forcedInstantTimeUpdate = true
                 self.hours = data.hours
                 self.mins = data.mins
                 NetworkOverrideClockTime(self.hours, self.mins, 0)
+                Wait(1000)
+                forcedInstantTimeUpdate = false
             end
         end
-        
     end
 
     self.freeze = data.freeze
@@ -97,23 +101,29 @@ RegisterNetEvent('cd_easytime:SyncTime')
 AddEventHandler('cd_easytime:SyncTime', function(data)
     if not PauseSync.state and not self.freeze then
         if self.timemethod == 'game' then
-            NetworkOverrideClockTime(data.hours, data.mins, data.seconds or 0)
+            time_transition = true
+            print('set 1')
+            SmoothChangeTime(data, 1)
+            print('set 2')
+            time_transition = false
+            self.hours = data.hours
+            self.mins = data.mins
 
         elseif self.timemethod == 'real' then
-            pause_realtime = true
+            time_transition = true
             SmoothChangeTime(data, Config.Time.RealTime.transition_speed)
-            pause_realtime = false
+            time_transition = false
             self.hours = data.hours
             self.mins = data.mins
         end
     end
 end)
 
-if Config.Time.METHOD == 'real' then
+if Config.Time.METHOD == 'real' or Config.Time.METHOD == 'game' then
     CreateThread(function()
         while true do
             Wait(5) --increase this timer to reduce resource usage. but this may cause jumping clouds.
-            if self.timemethod == 'real' and not pause_realtime and not self.freeze then
+            if not time_transition and not self.freeze and not forcedInstantTimeUpdate then
                 NetworkOverrideClockTime(self.hours, self.mins, 0)
             end
         end
@@ -154,8 +164,10 @@ function SmoothChangeTime(data, transition_speed)
         local seconds = math.floor(total_seconds % 60)
 
         NetworkOverrideClockTime(hours, mins, seconds)
+        if forcedInstantTimeUpdate then break end
         Wait(0)
     end
+    if forcedInstantTimeUpdate then NetworkOverrideClockTime(self.hours, self.mins, 0) return end
     NetworkOverrideClockTime(data.hours, data.mins, data.seconds or 0)
 end
 
@@ -237,7 +249,7 @@ function ChangeWeather(weather, instant, change_speed)
     if change_speed == nil then
         change_speed = (Config.Weather.GameWeather.dynamic_weather_time / 10) * 180
     end
-    
+
     if instant then
         ClearOverrideWeather()
         ClearWeatherTypePersist()
@@ -298,5 +310,3 @@ AddEventHandler('cd_easytime:ToggleNUIFocus', function()
         end
     end
 end)
-
-NetworkOverrideClockMillisecondsPerGameMinute(Config.Time.GameTime.time_cycle_speed*1000)
