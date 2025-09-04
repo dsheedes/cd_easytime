@@ -338,7 +338,6 @@ CreateThread(function()
         if self.timemethod == 'game' and not self.freeze then
             GameTimeChange(1)
             Wait(wait_timer)
-            print(self.hours..':'..self.mins)
         else
             Wait(1000)
         end
