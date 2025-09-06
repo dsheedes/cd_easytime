@@ -98,24 +98,15 @@ end)
 
 RegisterNetEvent('cd_easytime:SyncTime')
 AddEventHandler('cd_easytime:SyncTime', function(data)
-    if not PauseSync.state and not self.freeze then
-        if self.timemethod == 'game' then
-            time_transition = true
-            print('set 1')
-            SmoothChangeTime(data, 1)
-            print('set 2')
-            time_transition = false
-            self.hours = data.hours
-            self.mins = data.mins
+    if PauseSync.state or self.freeze then return end
 
-        elseif self.timemethod == 'real' then
-            time_transition = true
-            SmoothChangeTime(data, Config.Time.RealTime.transition_speed)
-            time_transition = false
-            self.hours = data.hours
-            self.mins = data.mins
-        end
-    end
+    local transition_speed = self.timemethod == 'game' and 1 or Config.Time.RealTime.transition_speed
+
+    time_transition = true
+    SmoothChangeTime(data, transition_speed)
+    time_transition = false
+
+    self.hours, self.mins = data.hours, data.mins
 end)
 
 if Config.Time.METHOD == 'real' or Config.Time.METHOD == 'game' then
