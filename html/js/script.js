@@ -208,7 +208,7 @@ function updateTimeDisplay(hours, minutes) {
 				":" +
 				(time.minutes < 10 ? "0" + time.minutes : time.minutes) +
 				":00Z"
-		).toLocaleTimeString("en-US", {
+		).toLocaleTimeString("de-DE", {
 			hour12: false,
 			hour: "numeric",
 			minute: "numeric",
