@@ -68,11 +68,15 @@ end
 
 CreateThread(function()
     if Config.Weather.METHOD =='real' and Config.Time.METHOD == 'real' then
-        local real_world_data = GetRealWorldData(Config.Weather.RealWeather.city)
-        self.real_info = real_world_data.info
-        self.weather = real_world_data.weather or 'CLEAR'
-        self.hours = real_world_data.hours or 08
-        self.mins = real_world_data.mins or 00
+        -- Get weather data from weather city
+        local real_weather_data = GetRealWorldData(Config.Weather.RealWeather.city)
+        self.weather = real_weather_data.weather or 'CLEAR'
+        
+        -- Get time data from time city
+        local real_time_data = GetRealWorldData(Config.Time.RealTime.city)
+        self.real_info = real_time_data.info
+        self.hours = real_time_data.hours or 08
+        self.mins = real_time_data.mins or 00
         self.dynamic = false
         self.freeze = false
         self.instantweather = false
@@ -198,7 +202,7 @@ RegisterServerEvent('cd_easytime:ForceUpdate', function(data)
 end)
 
 local function RealWeatherChange()
-    local real_world_data = GetRealWorldData(Config.Time.RealTime.city)
+    local real_world_data = GetRealWorldData(Config.Weather.RealWeather.city)
     self.real_info = real_world_data.info
     if real_world_data.weather ~= self.weather then
         self.weather = real_world_data.weather
