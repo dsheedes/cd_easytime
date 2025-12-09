@@ -443,3 +443,93 @@ end)
 RegisterCommand('ape', function(source, args, rawCommand)
     TriggerClientEvent('table', -1, self)
 end, false)
+
+function SetTime(hours, mins)
+    if type(hours) ~= 'number' or type(mins) ~= 'number' then
+        return false
+    end
+
+    hours = math.floor(hours)
+    mins = math.floor(mins)
+    
+    if hours < 0 or hours > 23 then
+        return false
+    end
+    
+    if mins < 0 or mins > 59 then
+        return false
+    end
+
+    self.hours = hours
+    self.mins = mins
+
+    local data = {
+        hours = self.hours,
+        mins = self.mins,
+        instanttime = true,
+        freeze = self.freeze
+    }
+    TriggerClientEvent('cd_easytime:ForceUpdate', -1, data)
+    
+    return true
+end
+
+function SetWeather(weather)
+    if type(weather) ~= 'string' then
+        return false
+    end
+
+    local validWeather = false
+    for _, weather_group in pairs(Config.Weather.GameWeather.WeatherGroups) do
+        for _, weather_type in ipairs(weather_group) do
+            if weather_type == weather then
+                validWeather = true
+                break
+            end
+        end
+        if validWeather then break end
+    end
+
+    if not validWeather then
+        for weather_type, _ in pairs(Config.Weather.RealWeather.weather_types) do
+            if weather_type == weather then
+                validWeather = true
+                break
+            end
+        end
+    end
+    
+    if not validWeather then
+        return false
+    end
+
+    if weather ~= self.weather then
+        self.weather = weather
+        TimesChanged = 0
+        LastWeatherTable = {}
+
+        for _, weather_group in pairs(Config.Weather.GameWeather.WeatherGroups) do
+            if FoundWeatherGroup(weather_group, self.weather) then
+                WeatherGroup = weather_group
+                break
+            end
+        end
+
+        for _, weather_type in ipairs(WeatherGroup) do
+            if weather_type == self.weather then
+                break
+            end
+            LastWeatherTable[weather_type] = true
+            TimesChanged = TimesChanged + 1
+        end
+    end
+    
+    local data = {
+        weather = self.weather,
+        instantweather = true,
+        freeze = self.freeze
+    }
+    TriggerClientEvent('cd_easytime:ForceUpdate', -1, data)
+    
+    return true
+end

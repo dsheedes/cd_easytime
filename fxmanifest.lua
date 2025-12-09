@@ -46,7 +46,9 @@ exports {
 server_exports {
     'GetWeather',
     'GetAllData',
-    'GetRealData'
+    'GetRealData',
+    'SetTime',
+    'SetWeather'
 }
 
 provide 'vSync'
