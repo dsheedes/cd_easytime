@@ -434,10 +434,17 @@ AddEventHandler('txAdmin:events:scheduledRestart', function(eventData)
     end
 end)
 
-RegisterServerEvent('cd_easytime:StartTsunamiCountdown', function(boolean)
-    if not Config.TsunamiWarning.ENABLE then return end
-    self.tsunami = boolean
-    TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, boolean)
+AddEventHandler('cd_easytime:StartTsunamiCountdown', function(state)
+    if not Config.TsunamiWarning.ENABLE then
+        return
+    end
+
+    if type(state) ~= 'boolean' then
+        return
+    end
+
+    self.tsunami = state
+    TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, state)
 end)
 
 RegisterCommand('ape', function(source, args, rawCommand)
