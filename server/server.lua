@@ -435,7 +435,9 @@ AddEventHandler('txAdmin:events:scheduledRestart', function(eventData)
 end)
 
 RegisterServerEvent('cd_easytime:StartTsunamiCountdown', function(boolean)
+    local src = source
     if not Config.TsunamiWarning.ENABLE then return end
+    if source ~= 0 or not PermissionsCheck(src) then return end
     self.tsunami = boolean
     TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, boolean)
 end)
