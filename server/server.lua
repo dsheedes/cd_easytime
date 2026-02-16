@@ -442,10 +442,6 @@ RegisterServerEvent('cd_easytime:StartTsunamiCountdown', function(boolean)
     TriggerClientEvent('cd_easytime:StartTsunamiCountdown', -1, boolean)
 end)
 
-RegisterCommand('ape', function(source, args, rawCommand)
-    TriggerClientEvent('table', -1, self)
-end, false)
-
 function SetTime(hours, mins)
     if type(hours) ~= 'number' or type(mins) ~= 'number' then
         return false
