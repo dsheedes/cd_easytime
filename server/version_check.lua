@@ -4,7 +4,7 @@ CreateThread(function()
     local current_version = GetResourceMetadata(resource_name, 'version', 0)
     local docs_link = 'https://docs.codesign.pro/free-scripts/easytime-time-and-weather-management#changelog'
     local download_link = 'https://keymaster.fivem.net/asset-grants'
-    PerformHttpRequest('https://raw.githubusercontent.com/RampBST/Codesign_Versions_V2/master/'..resource_name..'.txt',function(error, result, headers)
+    PerformHttpRequest('https://raw.githubusercontent.com/RampBST/Codesign_Versions_V2/master/cd_easytime.txt',function(error, result, headers)
         if not result then print('^1Version check disabled because github is having issues.^0') return end
         local result = json.decode(result:sub(1, -2))
         local function CompareVersions(new, current)
