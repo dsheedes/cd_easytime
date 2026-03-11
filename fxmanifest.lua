@@ -51,6 +51,14 @@ server_exports {
     'SetWeather'
 }
 
+escrow_ignore {
+    'client/client.lua',
+    'configs/client_customise_me.lua',
+    'configs/config.lua',
+    'server/server.lua',
+    'server/version_check.lua',
+}
+
 provide 'vSync'
 provide 'qb-weathersync'
 provide 'qbx_weathersync'
