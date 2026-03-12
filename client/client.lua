@@ -235,6 +235,8 @@ function CheckSnowSync(NewWeather)
     end
 end
 
+local RainWeathers = {['RAIN'] = true, ['THUNDER'] = true, ['CLEARING'] = true, ['NEUTRAL'] = true}
+
 function ChangeWeather(weather, instant, change_speed)
     if change_speed == nil then
         change_speed = (Config.Weather.GameWeather.dynamic_weather_time / 10) * 180
@@ -250,8 +252,26 @@ function ChangeWeather(weather, instant, change_speed)
         ClearOverrideWeather()
         SetWeatherTypeOvertimePersist(weather, change_speed)
     end
+
+    if RainWeathers[weather] then
+        SetRainLevel(1.0)
+    else
+        SetRainLevel(0.0)
+    end
 end
 
+CreateThread(function()
+    while true do
+        Wait(2000)
+        if self.weather then
+            if RainWeathers[self.weather] then
+                SetRainLevel(1.0)
+            else
+                SetRainLevel(0.0)
+            end
+        end
+    end
+end)
 
 function ChangeBlackout(blackout)
     if GetGameBuildNumber() >= 2372 then
