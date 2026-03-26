@@ -102,7 +102,7 @@ Config.Weather = {
         snow_chance = 5, --Chance of snow (0-100%) if the rain WeatherGroup is randomly selected.
         WeatherGroups = { --Different weather groups to cycle through.
             [1] = {'CLEAR', 'CLOUDS','EXTRASUNNY', 'OVERCAST'},--Clear weather
-            [2] = {'CLEARING', 'RAIN', 'NEUTRAL', 'THUNDER'},--Rainy weather
+            [2] = {'CLEARING', 'RAIN', 'THUNDER'},--Rainy weather
             [3] = {'SMOG', 'FOGGY'},--Foggy weather
             [4] = {'SNOWLIGHT', 'SNOW', 'BLIZZARD', 'XMAS'}--Snowy weather
         }
@@ -111,7 +111,7 @@ Config.Weather = {
     RealWeather = { --If you chose 'real', you have the following configurable options:
         city = 'London', --The city from which you want to fetch the weather, e.g., London, Miami, Dubai, or Paris.
         weather_check = 30, --How often (in minutes) to check for weather changes.
-        weather_types = { ['CLEAR'] = {802}, ['CLOUDS'] = {803}, ['EXTRASUNNY'] = {800,801}, ['OVERCAST'] = {804}, ['CLEARING'] = {300,301,310,311,313,321}, ['RAIN'] = {501,502,503,504,511,522,531}, ['NEUTRAL'] = {302,312,314,500,520,521}, ['THUNDER'] = {200,201,202,210,211,212,221,230,231,232}, ['SMOG'] = {701,711,721,731,771}, ['FOGGY'] = {741,751,761,762,781}, ['SNOWLIGHT'] = {611,615,616}, ['SNOW'] = {600,620}, ['BLIZZARD'] = {612,613,620,621,622}, ['XMAS'] = {601,602} } --Weather types and their codes (do not change this).
+        weather_types = { ['CLEAR'] = {802,302,312,314,500,520,521}, ['CLOUDS'] = {803}, ['EXTRASUNNY'] = {800,801}, ['OVERCAST'] = {804}, ['CLEARING'] = {300,301,310,311,313,321}, ['RAIN'] = {501,502,503,504,511,522,531}, ['THUNDER'] = {200,201,202,210,211,212,221,230,231,232}, ['SMOG'] = {701,711,721,731,771}, ['FOGGY'] = {741,751,761,762,781}, ['SNOWLIGHT'] = {611,615,616}, ['SNOW'] = {600,620}, ['BLIZZARD'] = {612,613,620,621,622}, ['XMAS'] = {601,602} } --Weather types and their codes (do not change this).
     }
 }
 
